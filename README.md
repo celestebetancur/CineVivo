@@ -18,3 +18,8 @@ Así con todos los comandos.
 Los videos a manipular deben ser puestos en la carpeta videos, las mascaras en mask y se recomienda guardar los códigos (al presionar cmd + s) en code (para tener sintaxis con colores debe guardar su archivo con la extensión .cvf), cmd + o permite abrir los códigos guardados.
 
 (Al ejecutar la palabra: espanol, el lenguaje funciona con palabras claves en español, english hace lo mismo para ingles, que es el idioma por defecto, languageES.xml contiene todas las palabras claves en español pero puede ser editado en tiempo real para poner las palabras que mas le gusten)
+
+cmd + 0 permite acceder a una consola:
+  list-videos, este comando hace una lista de los nombres de los videos disponibles en la carpeta -videos-
+  list-mask, este comando hace una lista de los nombres de las mascaras disponibles en la carpeta -mask-
+  help, abre el help.txt en el buffer 9 que puede accederse con cmd + 9
