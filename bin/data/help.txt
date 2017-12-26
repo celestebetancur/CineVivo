@@ -1,5 +1,7 @@
 Bienvenido CineVivo Alpha Test Version
 
+(ejecutar la palabra: espanol, el lenguaje funciona con palabras claves en español, english hace lo mismo para ingles, que es el idioma por defecto, languageES.xml contiene todas las palabras claves en español pero puede ser editado en tiempo real)
+
 Uso:
 
 Usando la tecla Super (cmd - ctrl) + (1 - 9) se puede cambiar de buffer de texto.

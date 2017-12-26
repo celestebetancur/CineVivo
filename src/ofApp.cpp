@@ -9,11 +9,11 @@ void ofApp::setup(){
     
     ofSetVerticalSync(false);
     
+    XML.load ("OSCConf.xml");
     //OSC out
     portOut = XML.getValue("PORT:NAME:OUT",5613);
     sender.setup("127.0.0.1",portOut);
     //OSC in
-    XML.load ("OSCConf.xml");
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
     
@@ -72,7 +72,6 @@ void ofApp::update(){
         reciever.getNextMessage(&m);
         
         for(int i  = 0; i < m.getNumArgs(); i++){
-            ofLogNotice() << m.getNumArgs();
             if (m.getAddress() == "/windowShape"  &&  m.getNumArgs() == 2){
                 ofSetWindowShape(m.getArgAsInt(0), m.getArgAsInt(1));
             }

@@ -17,6 +17,7 @@
 	<punctuation>;:,?</punctuation>
 	<words>
 		
+        <!-- EN -->
 		<keyword>load</keyword>
 		<keyword>free</keyword>
 		<keyword>mask</keyword>
@@ -46,6 +47,6 @@
         <function>clean</function>
         <function>fitAllHorizontal</function>
         <function>fitAllVertical</function>
-
+         
 	</words>
 </syntax>

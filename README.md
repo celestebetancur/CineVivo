@@ -16,3 +16,5 @@ Esta linea en la sintaxis del minilenguaje CineVivo carga el video anyVideo.mov 
 Así con todos los comandos.
 
 Los videos a manipular deben ser puestos en la carpeta videos, las mascaras en mask y se recomienda guardar los códigos (al presionar cmd + s) en code (para tener sintaxis con colores debe guardar su archivo con la extensión .cvf), cmd + o permite abrir los códigos guardados.
+
+(Al ejecutar la palabra: espanol, el lenguaje funciona con palabras claves en español, english hace lo mismo para ingles, que es el idioma por defecto, languageES.xml contiene todas las palabras claves en español pero puede ser editado en tiempo real para poner las palabras que mas le gusten)

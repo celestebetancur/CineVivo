@@ -4,6 +4,8 @@
 //--------------------------------------------------------------
 void GuiApp::setup() {
     
+    XML.load ("language.xml");
+    
     ofSetFrameRate(30);
     ofBackground(0);
     ofSetWindowTitle("CineVivo - Live Coding");
@@ -21,7 +23,7 @@ void GuiApp::setup() {
     editor.setup(this);
     
     colorScheme.loadFile("colorScheme.xml");
-    syntax.loadFile("CVSyntax.xml");
+    syntax.loadFile("CVSyntaxEN.xml");
     
     editor.setColorScheme(&colorScheme);
     editor.getSettings().addSyntax(&syntax);
@@ -132,7 +134,17 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
         ofxOscMessage s;
         if(lineas[i].size() != 0){
             texto = ofSplitString(lineas[i], " ");
-            if(texto[0] == "windowShape" && texto.size() == 3){
+            if(texto[0] == "english" && texto.size() == 1){
+                syntax.loadFile("CVSyntaxEN.xml");
+                XML.load ("languageEN.xml");
+                ofLogNotice() << "CineVivo[send]: English syntax loaded";
+            }
+            if(texto[0] == "espanol" && texto.size() == 1){
+                syntax.loadFile("CVSyntaxES.xml");
+                XML.load ("languageES.xml");
+                ofLogNotice() << "CineVivo[send]: Sintaxis en Español cargada";
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:WSHAPE","windowShape") && texto.size() == 3){
                 string temp = "/windowShape " + texto[1] + " " + texto[2];
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/windowShape");
@@ -140,28 +152,28 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                 s.addIntArg(ofToInt(texto[2]));
                 osc.sendMessage(s);
             }
-            if(texto[0] == "fullscreen" && texto.size() == 2){
+            if(texto[0] == XML.getValue("WORDS:NAME:FSCREEN","fullscreen") && texto.size() == 2){
                 string temp = "/fullscreen " + texto[1];
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/fullscreen");
                 s.addIntArg(ofToInt(texto[1]));
                 osc.sendMessage(s);
             }
-            if(texto[0] == "clean" && texto.size() == 1){
+            if(texto[0] == XML.getValue("WORDS:NAME:CLEAN","clean") && texto.size() == 1){
                 string temp = "/clean ";
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/clean");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
-            if(texto[0] == "fitAllHorizontal" && texto.size() == 1){
+            if(texto[0] == XML.getValue("WORDS:NAME:FITAHOR","fitAllHorizontal") && texto.size() == 1){
                 string temp = "/fitAllHorizontal ";
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/fitAllHorizontal");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
-            if(texto[0] == "fitAllVertical" && texto.size() == 1){
+            if(texto[0] == XML.getValue("WORDS:NAME:FITAVER","fitAllVertical") && texto.size() == 1){
                 string temp = "/fitAllVertical ";
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/fitAllVertical");
@@ -176,7 +188,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
             }
             
             if(numV >= 0 && numV <= 7){
-                if(texto[1] == "load" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:LOAD","load") && texto.size() == 3){
                     string temp = "/load " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/load");
@@ -184,14 +196,14 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "free"&& texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:FREE","free") && texto.size() == 2){
                     string temp = "/free " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/free");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "mask" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:MASK","mask") && texto.size() == 3){
                     string temp = "/mask " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/mask");
@@ -199,7 +211,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "rectMode" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:RECTMODE","rectMode") && texto.size() == 3){
                     string temp = "/rectMode " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/rectMode");
@@ -207,7 +219,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "pos" && texto.size() == 4){
+                if(texto[1] == XML.getValue("WORDS:NAME:POS","pos") && texto.size() == 4){
                     string temp = "/pos " + ofToString(numV) + " " + texto[2] + " " + texto[3];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/pos");
@@ -216,7 +228,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[3]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "posX" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:POSX","posX") && texto.size() == 3){
                     string temp = "/posX " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/posX");
@@ -224,7 +236,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "posY" && texto.size() == 3){
+                if(texto[1] ==  XML.getValue("WORDS:NAME:POSY","posY") && texto.size() == 3){
                     string temp = "/posY " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/posY");
@@ -232,7 +244,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "rot" && texto.size() == 5){
+                if(texto[1] == XML.getValue("WORDS:NAME:ROT","rot") && texto.size() == 5){
                     string temp = "/rotX " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/rot");
@@ -242,7 +254,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[4]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "rotX" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTX","rotX") && texto.size() == 3){
                     string temp = "/rotX " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/rotX");
@@ -250,7 +262,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "rotY" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTY","rotY") && texto.size() == 3){
                     string temp = "/rotY " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/rotY");
@@ -258,7 +270,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "rotZ" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTZ","rotZ") && texto.size() == 3){
                     string temp = "/rotZ " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/rotZ");
@@ -266,7 +278,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "size" && texto.size() == 4){
+                if(texto[1] == XML.getValue("WORDS:NAME:SIZE","size") && texto.size() == 4){
                     string temp = "/sizeX " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/size");
@@ -275,7 +287,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[3]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "width" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:WIDTH","width") && texto.size() == 3){
                     string temp = "/width " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/width");
@@ -283,7 +295,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "height" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:HEIGHT","height") && texto.size() == 3){
                     string temp = "/height " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/height");
@@ -291,7 +303,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "scale" && texto.size() == 4){
+                if(texto[1] == XML.getValue("WORDS:NAME:SCALE","scale") && texto.size() == 4){
                     string temp = "/scale " + ofToString(numV) + " " + texto[2] + " " + texto[3];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/scale");
@@ -300,7 +312,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[3]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "speed" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:SPEED","speed") && texto.size() == 3){
                     string temp = "/speed " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/speed");
@@ -308,35 +320,35 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "play" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:PLAY","play") && texto.size() == 2){
                     string temp = "/play " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/play");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "stop" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:STOP","stop") && texto.size() == 2){
                     string temp = "/stop " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/stop");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "pause" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:PAUSE","pause") && texto.size() == 2){
                     string temp = "/pause " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/pause");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "setFrame" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:SETFRAME","setFrame") && texto.size() == 3){
                     string temp = "/setFrame " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/setFrame");
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "color" && texto.size() == 5){
+                if(texto[1] == XML.getValue("WORDS:NAME:COLOR","color") && texto.size() == 5){
                     string temp = "/color " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/color");
@@ -346,7 +358,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[4]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "opacity" && texto.size() == 3){
+                if(texto[1] == XML.getValue("WORDS:NAME:OPACITY","opacity") && texto.size() == 3){
                     string temp = "/opacity " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/opacity");
@@ -354,7 +366,7 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "fit" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:FIT","fit") && texto.size() == 2){
                     string temp = "/fit " + ofToString(numV) + " " + texto[0];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/fit");
@@ -362,14 +374,14 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[0]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "fitHorizontal" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:FHORIZONTAL","fitHorizontal") && texto.size() == 2){
                     string temp = "/fitHorizontal " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/fitHorizontal");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == "fitVertical" && texto.size() == 2){
+                if(texto[1] == XML.getValue("WORDS:NAME:FVERTICAL","fitVertical") && texto.size() == 2){
                     string temp = "/fitVertical " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/fitVertical");
