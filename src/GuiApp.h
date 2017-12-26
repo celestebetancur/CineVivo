@@ -4,6 +4,7 @@
 #include "ofxGLEditor.h"
 #include "ofxOsc.h"
 #include <stdlib.h>
+#include "ofxXmlSettings.h"
 
 class GuiApp: public ofBaseApp, public ofxGLEditorListener  {
     

@@ -1,4 +1,3 @@
-<!--color scheme by Joshua Batty <joshpbatty@gmail.com> -->
 <colorscheme>
 	<text>
         <r>0</r>
@@ -8,10 +7,12 @@
 	<string>
 		<r>0</r>
 		<g>128</g>
-		<b>0</b>
+		<b>255</b>
 	</string>
 	<number>
-		<gray>255</gray>
+        <r>100</r>
+        <g>255</g>
+        <b>100</b>
 	</number>
 	<comment>
 		<r>0</r>
@@ -34,8 +35,8 @@
 		<b>185</b>
 	</typename>
 	<function>
-		<r>11</r>
-		<g>179</g>
+		<r>140</r>
+		<g>16</g>
 		<b>244</b>
 	</function>
 </colorscheme>

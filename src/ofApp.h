@@ -32,9 +32,10 @@ public:
     
     //OSC
     ofxXmlSettings XML;
-    ofxOscReceiver osc;
+    ofxOscReceiver reciever;
     ofxOscSender sender;
-    int port;
+    int portIn;
+    int portOut;
     
     // CineVivo LiveCoding
     ofVec2f one[LIM],two[LIM],three[LIM],four[LIM];

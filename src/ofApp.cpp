@@ -10,11 +10,12 @@ void ofApp::setup(){
     ofSetVerticalSync(false);
     
     //OSC out
-    sender.setup("127.0.0.1",5613);
+    portOut = XML.getValue("PORT:NAME:OUT",5613);
+    sender.setup("127.0.0.1",portOut);
     //OSC in
     XML.load ("OSCConf.xml");
-    port = XML.getValue("PORT:NAME:PUERTO",5612);
-    osc.setup(port);
+    portIn = XML.getValue("PORT:NAME:IN",5612);
+    reciever.setup(portIn);
     
     //-----------------------------------
     
@@ -65,10 +66,10 @@ void ofApp::setup(){
 //--------------------------------------------------------------
 void ofApp::update(){
     
-    while (osc.hasWaitingMessages()){
+    while (reciever.hasWaitingMessages()){
         
         ofxOscMessage m;
-        osc.getNextMessage(&m);
+        reciever.getNextMessage(&m);
         
         for(int i  = 0; i < m.getNumArgs(); i++){
             ofLogNotice() << m.getNumArgs();
