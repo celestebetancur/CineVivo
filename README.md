@@ -15,4 +15,4 @@ Esta linea en la sintaxis del minilenguaje CineVivo carga el video anyVideo.mov 
 
 Así con todos los comandos.
 
-Los videos a manipular deben ser puestos en la carpeta videos, las mascaras en mask y se recomienda guardar los códigos (al presionar cmd + s) en code, no es necesario usar ninguna extención de archivo, cmd + o permite abrir los códigos guardados.
+Los videos a manipular deben ser puestos en la carpeta videos, las mascaras en mask y se recomienda guardar los códigos (al presionar cmd + s) en code (para tener sintaxis con colores debe guardar su archivo con la extención .cvf), cmd + o permite abrir los códigos guardados.
