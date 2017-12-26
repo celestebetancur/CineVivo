@@ -1,68 +1,51 @@
 #include "ofMain.h"
 #include "ofApp.h"
+#include "ofAppGlutWindow.h"
+#include "ofxOsc.h"
 
 //========================================================================
 int main( ){
-
+    
+    ofAppGlutWindow window;
+    /*//ofSetupOpenGL(&window,640,480, OF_WINDOW);			// <-------- setup the GL context
+    
+    // this kicks off the running of my app
+    // can be OF_WINDOW or OF_FULLSCREEN
+    // pass in width and height too:
+    
+    
+    ofRunApp( new ofApp());*/
+    
     ofGLFWWindowSettings settings;
 
-    // MAIN WINDOW
-    //settings.width = 100;
-    //settings.height = 100;
-    settings.setPosition(ofVec2f(WIDTH * 0.323,0));
+    settings.width = 300;
+    settings.height = 200;
+    settings.setPosition(ofVec2f(450,0));
+    settings.multiMonitorFullScreen = false;
     settings.resizable = true;
-    shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
-
-    //PREVIEW A
-    settings.width = WIDTH * 0.23;
-    settings.height = HEIGHT * 0.28;
-    settings.setPosition(ofVec2f(0,0));
-    settings.resizable = false;
-    settings.shareContextWith = mainWindow;
+    settings.monitor = 0;
+    settings.windowMode = OF_WINDOW;
     shared_ptr<ofAppBaseWindow> guiWindow = ofCreateWindow(settings);
-    guiWindow->setVerticalSync(false);
-    
-    shared_ptr<ofApp> mainApp(new ofApp);
-    mainApp->setupGui();
-    ofAddListener(guiWindow->events().draw,mainApp.get(),&ofApp::drawGui);
-    ofAddListener(guiWindow->events().draw,mainApp.get(),&ofApp::testGui);
-    
-    //PREVIEW B
-    settings.width = WIDTH * 0.23;
-    settings.height = HEIGHT * 0.29;
-    settings.setPosition(ofVec2f(0,HEIGHT * .33));
-    settings.resizable = false;
-    settings.shareContextWith = mainWindow;
-    shared_ptr<ofAppBaseWindow> bWindow = ofCreateWindow(settings);
-    bWindow->setVerticalSync(false);
-    
-    mainApp->setupGuiB();
-    ofAddListener(bWindow->events().draw,mainApp.get(),&ofApp::drawGuiB);
-    
-    //OUTPUT
-    settings.width = WIDTH * 0.23;
-    settings.height = HEIGHT * 0.28;
-    settings.setPosition(ofVec2f(0,HEIGHT * .66));
-    settings.resizable = true;
-    settings.shareContextWith = mainWindow;
-    shared_ptr<ofAppBaseWindow> outWindow = ofCreateWindow(settings);
-    outWindow->setVerticalSync(false);
-    
-    mainApp->setupOut();
-    ofAddListener(outWindow->events().draw,mainApp.get(),&ofApp::drawOut);
 
-    //PREVIEW
-    /*settings.width = WIDTH * 0.8;
-    settings.height = HEIGHT * 0.25;
+   
+    settings.width = 200;
+    settings.height = 200;
     settings.setPosition(ofVec2f(0,0));
-    settings.resizable = false;
-    settings.shareContextWith = mainWindow;
-    shared_ptr<ofAppBaseWindow> prevWindow = ofCreateWindow(settings);
-    prevWindow->setVerticalSync(false);
+    settings.multiMonitorFullScreen = false;
+    settings.resizable = true;
+    settings.monitor = 1; //multimonitor
+    settings.windowMode = OF_WINDOW;
+    //settings.monitor = 0; //single monitor
+    //settings.windowMode = OF_WINDOW;
+    shared_ptr<ofAppBaseWindow> mainWindow = ofCreateWindow(settings);
     
-    mainApp->setupPreview();
-    ofAddListener(prevWindow->events().draw,mainApp.get(),&ofApp::drawPreview);*/
-    
+    shared_ptr<GuiApp> guiApp(new GuiApp);
+    shared_ptr<ofApp> mainApp(new ofApp);
+
+    mainApp->gui = guiApp;
+
     ofRunApp(mainWindow, mainApp);
+    ofRunApp(guiWindow, guiApp);
+    
     ofRunMainLoop();
 }

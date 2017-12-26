@@ -1,0 +1,4 @@
+ofxAssimpModelLoader
+ofxGLEditor
+ofxOsc
+ofxXmlSettings

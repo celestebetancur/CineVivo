@@ -1,0 +1,60 @@
+layer: is an int between 0 and 9 / layer se refiere a un entero entre 0 y 9
+
+- Set window dimensions / Dimensiones de la pantalla:
+	windowShape width height
+- Fullscreen toggle / Entrar y salir de pantalla completa:
+	fullscreen (value 0,1)
+- Clean layers / Limpiar todas las capas:
+	clean
+- Load source / Cargar fuente de video:
+	layer load (video name, camera)
+- Free layer / Liberar una capa:
+	layer free
+- Load layer mask / Cargar una mascara sobre un layer:
+	layer mask (mask name)
+- Play / Correr video:
+	layer play
+- Pause / Pausar video:
+	layer pause
+- Stop / Parar video:
+	layer stop
+- Rect Mode / Punto de referencia de coordenadas:
+	layer rectMode (value 0,1)
+- Position / Posición:
+	layer pos X Y
+- X position / Posición en X:
+	layer posX value 
+- Y position / Posición en Y:
+	layer posY value 
+- Rotation / Rotación:
+	layer rot X Y Z 
+- X rotation / Rotación en X:
+	layer rotX value 
+- Y rotation / Rotación en Y:
+	layer rotY value 
+- Z rotation / Rotación en Z:
+	layer rotZ value 
+- Size / Tamaño:
+	layer size width height
+- Width / Ancho:
+	layer width value
+- Height / Alto:
+	layer height value
+- Scale / Escala:
+	layer scale width% height%
+- Speed / Velocidad:
+	layer speed value
+- Color:
+	layer color R G B
+- Opacity / Opacidad:
+	layer opacity value
+- Fit / Ajustar:
+	layer fit
+- Horizontal fit / Ajustar horizontalmente:
+	layer fitHorizontal
+- Vertical fit / Ajustar verticalmente:
+	layer fitVertical
+- Fit all active layers horizontally / Ajustar las capas activas horizontalmente:
+	fitAllHorizontal
+- Fit all active layers vertically / Ajustar las capas activas verticalmente:
+	fitAllVertical

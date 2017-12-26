@@ -1,0 +1,59 @@
+Bienvenido CineVivo Alpha Test Version
+
+Uso:
+
+Usando la tecla Super (cmd - ctrl) + (1 - 9) se puede cambiar de buffer de texto.
+Super + '0' cambia a la consola.
+
+Super + 'e' para evaluar todo el buffer.
+Shift + flechas para seleccionar un texto especifico, luego super + 'e' para evaluar.
+
+Sintaxis:
+
+Puedes controlar 10 canales independientes de video o de cámara, todos en el mismo buffer
+o aprovechar los buffers para trabajar independientemente:
+
+1 load testVideo.mov
+
+Este ejemplo carga el video testVideo.mov en el canal 1
+También puedes cargar una cámara:
+
+1 load camera
+
+Los canales están numerados con la convención de programación, por lo tanto el canal 0 sería el primer canal y el 9 el último de los diez disponibles.
+
+Puedes usar las siguientes funciones:
+
+color
+
+3 color 255 0 0
+
+Este ejemplo pone el RGB en 255 el rojo, 0 en verde y 0 en azul para el canal 3 de video.
+
+opacity
+
+2 opacity 100
+
+Esta linea pone la opacidad del canal 2 en 100
+
+
+De forma similar puede experimentar con:
+
+(Números Enteros como parámetros)
+
+size (dos parámetros, ancho y alto)
+width
+height
+posX
+posY
+rotX
+rotY
+rotZ
+
+(Números Flotantes)
+
+speed (puede ser un número negativo para reproducir el video en reversa)
+scale (porcentaje de cambio)
+
+En la consola puede ver la referencia completa escribiendo keywords 
+
