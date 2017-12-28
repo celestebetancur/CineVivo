@@ -4,7 +4,7 @@
 //--------------------------------------------------------------
 void GuiApp::setup() {
     
-    XML.load ("language.xml");
+    XML.load ("xml/languageEN.xml");
     
     ofSetFrameRate(30);
     ofBackground(0);
@@ -22,8 +22,8 @@ void GuiApp::setup() {
     // setup editor with event listener
     editor.setup(this);
     
-    colorScheme.loadFile("colorScheme.xml");
-    syntax.loadFile("CVSyntaxEN.xml");
+    colorScheme.loadFile("xml/colorScheme.xml");
+    syntax.loadFile("xml/CVSyntaxEN.xml");
     
     editor.setColorScheme(&colorScheme);
     editor.getSettings().addSyntax(&syntax);
@@ -48,6 +48,18 @@ void GuiApp::setup() {
     
     osc.setup("127.0.0.1",5612);
     
+    // code poetry ;)
+    xmlVariables.load ("xml/variables.xml");
+    digit[0] = xmlVariables.getValue("VAR:NAME:CERO","0");
+    digit[1] = xmlVariables.getValue("VAR:NAME:UNO","1");
+    digit[2] = xmlVariables.getValue("VAR:NAME:DOS","2");
+    digit[3] = xmlVariables.getValue("VAR:NAME:TRES","3");
+    digit[4] = xmlVariables.getValue("VAR:NAME:CUATRO","4");
+    digit[5] = xmlVariables.getValue("VAR:NAME:CINCO","5");
+    digit[6] = xmlVariables.getValue("VAR:NAME:SEIS","6");
+    digit[7] = xmlVariables.getValue("VAR:NAME:SIETE","7");
+    digit[8] = xmlVariables.getValue("VAR:NAME:OCHO","8");
+    digit[9] = xmlVariables.getValue("VAR:NAME:NUEVE","9");
 }
 
 //--------------------------------------------------------------
@@ -94,6 +106,20 @@ void GuiApp::keyPressed(int key) {
             case 'k': case 26:
                 editor.setAutoFocus(!editor.getAutoFocus());
                 return;
+            case 'u':
+                xmlVariables.load ("xml/variables.xml");
+                digit[0] = xmlVariables.getValue("VAR:NAME:CERO","0");
+                digit[1] = xmlVariables.getValue("VAR:NAME:UNO","1");
+                digit[2] = xmlVariables.getValue("VAR:NAME:DOS","2");
+                digit[3] = xmlVariables.getValue("VAR:NAME:TRES","3");
+                digit[4] = xmlVariables.getValue("VAR:NAME:CUATRO","4");
+                digit[5] = xmlVariables.getValue("VAR:NAME:CINCO","5");
+                digit[6] = xmlVariables.getValue("VAR:NAME:SEIS","6");
+                digit[7] = xmlVariables.getValue("VAR:NAME:SIETE","7");
+                digit[8] = xmlVariables.getValue("VAR:NAME:OCHO","8");
+                digit[9] = xmlVariables.getValue("VAR:NAME:NUEVE","9");
+                ofLogNotice() << "CineVivo[setup]: Variables names updated";
+                return;
         }
     }
     
@@ -135,21 +161,42 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
         if(lineas[i].size() != 0){
             texto = ofSplitString(lineas[i], " ");
             if(texto[0] == "english" && texto.size() == 1){
-                syntax.loadFile("CVSyntaxEN.xml");
-                XML.load ("languageEN.xml");
-                ofLogNotice() << "CineVivo[send]: English syntax loaded";
+                syntax.loadFile("xml/CVSyntaxEN.xml");
+                XML.load ("xml/languageEN.xml");
+                ofLogNotice() << "CineVivo[setup]: English syntax loaded";
             }
             if(texto[0] == "espanol" && texto.size() == 1){
-                syntax.loadFile("CVSyntaxES.xml");
-                XML.load ("languageES.xml");
-                ofLogNotice() << "CineVivo[send]: Sintaxis en Español cargada";
+                syntax.loadFile("xml/CVSyntaxES.xml");
+                XML.load ("xml/languageES.xml");
+                ofLogNotice() << "CineVivo[setup]: Sintaxis en Español cargada";
+            }
+            if(texto[0] == "custom" && texto.size() == 1){
+                syntax.loadFile("xml/CVSyntaxCustom.xml");
+                XML.load ("xml/languageCustom.xml");
+                ofLogNotice() << "CineVivo[setup]: Custom syntax loaded";
             }
             if(texto[0] == XML.getValue("WORDS:NAME:WSHAPE","windowShape") && texto.size() == 3){
                 string temp = "/windowShape " + texto[1] + " " + texto[2];
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                ofLogNotice() << "CineVivo[setup]: " << temp;
                 s.setAddress("/windowShape");
                 s.addIntArg(ofToInt(texto[1]));
                 s.addIntArg(ofToInt(texto[2]));
+                osc.sendMessage(s);
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:BCOLOR","backColor") && texto.size() == 4){
+                string temp = "/backColor " + texto[1] + " " + texto[2] + " " + texto[3];
+                ofLogNotice() << "CineVivo[send]: " << temp;
+                s.setAddress("/backColor");
+                s.addIntArg(ofToInt(texto[1]));
+                s.addIntArg(ofToInt(texto[2]));
+                s.addIntArg(ofToInt(texto[3]));
+                osc.sendMessage(s);
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:BCOLOR","backColor") && texto.size() == 2){
+                string temp = "/backColor " + texto[1];
+                ofLogNotice() << "CineVivo[send]: " << temp;
+                s.setAddress("/backColor");
+                s.addIntArg(ofToInt(texto[1]));
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FSCREEN","fullscreen") && texto.size() == 2){
@@ -163,6 +210,27 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                 string temp = "/clean ";
                 ofLogNotice() << "CineVivo[send]: " << temp;
                 s.setAddress("/clean");
+                s.addIntArg(0);
+                osc.sendMessage(s);
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:PLAYALL","playAll") && texto.size() == 1){
+                string temp = "/playAll ";
+                ofLogNotice() << "CineVivo[send]: " << temp;
+                s.setAddress("/playAll");
+                s.addIntArg(0);
+                osc.sendMessage(s);
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:STOPALL","stopAll") && texto.size() == 1){
+                string temp = "/stopAll ";
+                ofLogNotice() << "CineVivo[send]: " << temp;
+                s.setAddress("/stopAll");
+                s.addIntArg(0);
+                osc.sendMessage(s);
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:PAUSEALL","pauseAll") && texto.size() == 1){
+                string temp = "/pauseAll ";
+                ofLogNotice() << "CineVivo[send]: " << temp;
+                s.setAddress("/pauseAll");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
@@ -182,9 +250,11 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
             }
             
             int numV = -1;
-            for(int i = 0; i < 10;i++){
-                if(ofIsStringInString(digit[i], texto[0]))
-                    numV = ofToInt(texto[0]);
+            for(int i = 0; i < 10; i++){
+                if(ofIsStringInString(digit[i], texto[0])){
+                    //numV = ofToInt(texto[0]);
+                    numV = i;
+                }
             }
             
             if(numV >= 0 && numV <= 7){
@@ -367,11 +437,10 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FIT","fit") && texto.size() == 2){
-                    string temp = "/fit " + ofToString(numV) + " " + texto[0];
+                    string temp = "/fit " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/fit");
                     s.addIntArg(numV);
-                    s.addIntArg(ofToInt(texto[0]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FHORIZONTAL","fitHorizontal") && texto.size() == 2){

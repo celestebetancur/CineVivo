@@ -1,0 +1,69 @@
+//me es_grato_vivir la_amistad_eterna
+el cuarto que me habita
+//el es_grato_vivir por_el_que_llegan_las_cosas
+//que_acomulo
+el desorden que fluye
+el oculto como_un_rio
+me oculto como_un_rio
+
+//serenas todas
+
+en
+el la_noche_sobre_todo
+en
+el que_desaparecemos
+un_declive
+<syntax>
+	<lang>CineVivo</lang>
+	<files>
+		<ext>cvf</ext>
+	</files>
+	<singlecomment>//</singlecomment>
+	<multicomment>
+		<begin>/*</begin>
+		<end>*/</end>
+	</multicomment>
+	<stringliteral>
+		<begin>R"</begin>
+		<end>"</end>
+	</stringliteral>
+	<preprocessor>#</preprocessor>
+	<operator>+-*/!|&amp;^~</operator>
+	<punctuation>;:,?</punctuation>
+	<words>
+		
+        <!-- EN -->
+		<keyword>cargar</keyword>
+		<keyword>es_grato_vivir</keyword>
+		<keyword>oculto</keyword>
+		<keyword>refCoord</keyword>
+		<keyword>posicionar</keyword>
+		<keyword>posEjeX</keyword>
+        <keyword>posEjeY</keyword>
+        <keyword>rotar</keyword>
+        <keyword>rotEjeX</keyword>
+        <keyword>rotEjeY</keyword>
+        <keyword>rotEjeZ</keyword>
+        <keyword>tamano</keyword>
+        <keyword>ancho</keyword>
+        <keyword>alto</keyword>
+        <keyword>escalar</keyword>
+        <keyword>velocidad</keyword>
+        <keyword>colorizar</keyword>
+        <keyword>opacidad</keyword>
+        <keyword>la_noche_sobre_todo</keyword>
+        <keyword>acoplarHor</keyword>
+        <keyword>acoplarVer</keyword>
+		<keyword>que_desaparecemos</keyword>        
+        <typename>CineVivo</typename>
+		
+		<function>tamVentana</function>
+		<function>panCompleta</function>
+        <function>un_declive</function>
+        <function>acoplarActHor</function>
+        <function>que_acomulo</function>
+        <function>colorFondo</function>
+        <function>todas</function>
+		<function>serenas</function> 
+	</words>
+</syntax>

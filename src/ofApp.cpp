@@ -5,11 +5,10 @@ void ofApp::setup(){
     
     ofSetWindowShape(600, 400);
     ofSetWindowTitle("CineVivo");
-    ofSetBackgroundColor(0);
     
     ofSetVerticalSync(false);
     
-    XML.load ("OSCConf.xml");
+    XML.load ("xml/OSCConf.xml");
     //OSC out
     portOut = XML.getValue("PORT:NAME:OUT",5613);
     sender.setup("127.0.0.1",portOut);
@@ -29,6 +28,7 @@ void ofApp::setup(){
     //-----------------------------------
     
     numVideosLoaded = 0;
+    backgroundColor = ofColor(0,0,0);
     
     for(int i = 0; i < LIM; i++){
 #ifdef TARGET_OPENGLES
@@ -75,6 +75,12 @@ void ofApp::update(){
             if (m.getAddress() == "/windowShape"  &&  m.getNumArgs() == 2){
                 ofSetWindowShape(m.getArgAsInt(0), m.getArgAsInt(1));
             }
+            if (m.getAddress() == "/backColor" && m.getNumArgs() == 3){
+                backgroundColor = ofColor(m.getArgAsInt(1),m.getArgAsInt(2),m.getArgAsInt(3));
+            }
+            if (m.getAddress() == "/backColor" && m.getNumArgs() == 1){
+                backgroundColor = ofColor(m.getArgAsInt(1));
+            }
             if (m.getAddress() == "/fullscreen" &&  m.getNumArgs() == 1){
                 if(m.getArgAsInt(0) == 1)
                     fullScreen = true;
@@ -104,6 +110,30 @@ void ofApp::update(){
                     maskedIndex[i] = 0;
                 }
             }
+            if (m.getAddress() == "/playAll"){
+                for(int i = 0; i < LIM; i++){
+                    if(videoLC[i].isLoaded()){
+                        vIndexPlaying[i] = 1;
+                        videoLC[i].play();
+                    }
+                }
+            }
+            if (m.getAddress() == "/stopAll"){
+                for(int i = 0; i < LIM; i++){
+                    if(vIndexPlaying[i] == 1){
+                        vIndexPlaying[i] = 0;
+                        videoLC[i].stop();
+                    }
+                }
+            }
+            if (m.getAddress() == "/pauseAll"){
+                for(int i = 0; i < LIM; i++){
+                    if(vIndexPlaying[i] == 1){
+                        vIndexPlaying[i] = 0;
+                        videoLC[i].setPaused(true);
+                    }
+                }
+            }
             if(m.getArgAsInt(0) >= 0 &&  m.getArgAsInt(0) < LIM){
                 if (m.getAddress() == "/load"  &&  m.getNumArgs() == 2){
                     if (m.getArgAsString(1) == "camera"){
@@ -123,12 +153,13 @@ void ofApp::update(){
                             texVideo[n].allocate(pix[n]);
                         }
                     } else {
-                        string temp = "videos/" + m.getArgAsString(1);
+                        //string temp = "videos/" + m.getArgAsString(1);
+                        string temp = "videos/" + m.getArgAsString(1) + ".mov";
                         int n = m.getArgAsInt(0);
-                        vIndex[n] = 1;
-                        vIndexPlaying[n] = 1;
                         videoLC[n].load(temp);
                         if(videoLC[n].isLoaded()){
+                            vIndex[n] = 1;
+                            vIndexPlaying[n] = 1;
                             videoLC[n].play();
                             vW[n] = videoLC[n].getWidth();
                             vH[n] = videoLC[n].getHeight();
@@ -211,7 +242,6 @@ void ofApp::update(){
                     videoLC[m.getArgAsInt(0)].play();
                 }
                 if (m.getAddress() == "/stop" && m.getNumArgs() == 1){
-                    ofLogNotice() << "stop";
                     vIndexPlaying[m.getArgAsInt(0)] = 0;
                     videoLC[m.getArgAsInt(0)].stop();
                 }
@@ -235,6 +265,8 @@ void ofApp::update(){
                         shaderOn[m.getArgAsInt(0)] = false;
                 }*/
                 if (m.getAddress() == "/fit" && m.getNumArgs() == 1){
+                    vX[m.getArgAsInt(0)] = 0;
+                    vY[m.getArgAsInt(0)] = 0;
                     vScaleX[m.getArgAsInt(0)] = (ofGetWidth()*1.0)/vW[m.getArgAsInt(0)];
                     vScaleY[m.getArgAsInt(0)] = (ofGetHeight()*1.0)/vH[m.getArgAsInt(0)];
                 }
@@ -324,6 +356,7 @@ void ofApp::update(){
 void ofApp::draw(){
     
     ofSetFullscreen(fullScreen);
+    ofSetBackgroundColor(backgroundColor);
     
     for(int i = 0; i < LIM; i++){
         if(vIndex[i] != 0){

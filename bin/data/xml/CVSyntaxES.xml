@@ -1,0 +1,53 @@
+<syntax>
+	<lang>CineVivo</lang>
+	<files>
+		<ext>cvf</ext>
+	</files>
+	<singlecomment>//</singlecomment>
+	<multicomment>
+		<begin>/*</begin>
+		<end>*/</end>
+	</multicomment>
+	<stringliteral>
+		<begin>R"</begin>
+		<end>"</end>
+	</stringliteral>
+	<preprocessor>#</preprocessor>
+	<operator>+-*/!|&amp;^~</operator>
+	<punctuation>;:,?</punctuation>
+	<words>
+		
+        <!-- EN -->
+		<keyword>cargar</keyword>
+		<keyword>liberar</keyword>
+		<keyword>enmascarar</keyword>
+		<keyword>refCoord</keyword>
+		<keyword>posicionar</keyword>
+		<keyword>posEjeX</keyword>
+        <keyword>posEjeY</keyword>
+        <keyword>rotar</keyword>
+        <keyword>rotEjeX</keyword>
+        <keyword>rotEjeY</keyword>
+        <keyword>rotEjeZ</keyword>
+        <keyword>tamano</keyword>
+        <keyword>ancho</keyword>
+        <keyword>alto</keyword>
+        <keyword>escalar</keyword>
+        <keyword>velocidad</keyword>
+        <keyword>colorizar</keyword>
+        <keyword>opacidad</keyword>
+        <keyword>acoplar</keyword>
+        <keyword>acoplarHor</keyword>
+        <keyword>acoplarVer</keyword>
+        
+        <typename>CineVivo</typename>
+		
+		<function>tamVentana</function>
+		<function>panCompleta</function>
+        <function>limpiar</function>
+        <function>acoplarActHor</function>
+        <function>acoplarActVer</function>
+        <function>colorFondo</function>
+         
+	</words>
+</syntax>

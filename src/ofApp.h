@@ -43,6 +43,7 @@ public:
     ofPixels pix[LIM];
     
     bool fullScreen = false;
+    ofColor backgroundColor;
     
     ofVideoGrabber cam;
     bool camON[LIM];
