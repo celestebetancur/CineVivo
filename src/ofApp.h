@@ -1,11 +1,13 @@
 #pragma once
 
-
 #include "ofMain.h"
 #include "ofxOsc.h"
 #include "ofxXmlSettings.h"
+#include "ofxFilterLibrary.h"
 #include "ofxAssimpModelLoader.h"
 #include "GuiApp.h"
+#include "ofxSyphon.h"
+
 #define WIDTH 1280
 #define HEIGHT 800
 #define LIM 10
@@ -47,7 +49,7 @@ public:
     
     ofVideoGrabber cam;
     bool camON[LIM];
-    
+
     int rectMode[LIM];
     
     ofVideoPlayer videoLC[LIM];
@@ -78,10 +80,22 @@ public:
     // utilities
     int numVideosLoaded;
     
-    ofxAssimpModelLoader models3D;
+    // filters
+    int currentFilter[LIM];
+    vector<AbstractFilter *> filters[LIM];
+    bool shaderLoaded[LIM];
+    
+    //ofxAssimpModelLoader models3D;
     ofLight light;
     ofLight lightC;
     
+    // syphon
+    ofxSyphonServerDirectory syphonDir[LIM];
+    ofxSyphonClient syphonClient[LIM];
+    bool syphonON[LIM];
+    int syphonDirId[LIM];
+    
+    // text editor shared pointer
     shared_ptr<GuiApp> gui;
 };
 

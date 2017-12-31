@@ -1,7 +1,7 @@
 <VAR>
 	<NAME>
-		<CERO> me </CERO>
-        <UNO> el </UNO>
+		<CERO> 0 </CERO>
+        <UNO> 1 </UNO>
         <DOS> 2 </DOS>
         <TRES> 3 </TRES>
         <CUATRO> 4 </CUATRO>

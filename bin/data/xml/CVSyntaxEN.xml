@@ -39,7 +39,8 @@
         <keyword>fit</keyword>
         <keyword>fitHorizontal</keyword>
         <keyword>fitVertical</keyword>
-        
+		<keyword>shader</keyword> 
+		<keyword>shaderMode</keyword>       
         <typename>CineVivo</typename>
 		
 		<function>windowShape</function>

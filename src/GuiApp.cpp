@@ -153,13 +153,20 @@ void GuiApp::saveFileEvent(int &whichEditor) {
 void GuiApp::executeScriptEvent(int &whichEditor) {
     // received on editor CTRL/Super + e
     
+    std::vector<string> textClean;
     string txt = editor.getText(whichEditor);
     lineas = ofSplitString(txt, "\n");
     
     for(int i = 0; i < lineas.size();i++){
         ofxOscMessage s;
         if(lineas[i].size() != 0){
-            texto = ofSplitString(lineas[i], " ");
+            textClean = ofSplitString(lineas[i], " ");
+            for(int i = 0; i < textClean.size();i++){
+                if(textClean[i] != ""){
+                    texto.push_back(textClean[i]);
+                }
+            }
+            
             if(texto[0] == "english" && texto.size() == 1){
                 syntax.loadFile("xml/CVSyntaxEN.xml");
                 XML.load ("xml/languageEN.xml");
@@ -252,12 +259,11 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
             int numV = -1;
             for(int i = 0; i < 10; i++){
                 if(ofIsStringInString(digit[i], texto[0])){
-                    //numV = ofToInt(texto[0]);
                     numV = i;
                 }
             }
             
-            if(numV >= 0 && numV <= 7){
+            if(numV >= 0 && numV < 10){
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD","load") && texto.size() == 3){
                     string temp = "/load " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
@@ -418,6 +424,30 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:SHADER","shader") && texto.size() == 3){
+                    string temp = "/shader " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/shader");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:SHADERM","shaderMode") && texto.size() == 3){
+                    string temp = "/shaderMode " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/shaderMode");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:BLEND","blend") && texto.size() == 3){
+                    string temp = "/blen " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/blend");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
                 if(texto[1] == XML.getValue("WORDS:NAME:COLOR","color") && texto.size() == 5){
                     string temp = "/color " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
                     ofLogNotice() << "CineVivo[send]: " << temp;
@@ -457,8 +487,17 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:SYPHON","syphon") && texto.size() == 3){
+                    string temp = "/syphon " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/syphon");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
             }
         }
+        texto.clear();
     }
 }
 

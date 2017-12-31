@@ -1,18 +1,4 @@
-//me es_grato_vivir la_amistad_eterna
-el cuarto que me habita
-//el es_grato_vivir por_el_que_llegan_las_cosas
-//que_acomulo
-el desorden que fluye
-el oculto como_un_rio
-me oculto como_un_rio
 
-//serenas todas
-
-en
-el la_noche_sobre_todo
-en
-el que_desaparecemos
-un_declive
 <syntax>
 	<lang>CineVivo</lang>
 	<files>
@@ -32,7 +18,7 @@ un_declive
 	<punctuation>;:,?</punctuation>
 	<words>
 		
-        <!-- EN -->
+        <!-- CUSTOM -->
 		<keyword>cargar</keyword>
 		<keyword>es_grato_vivir</keyword>
 		<keyword>oculto</keyword>

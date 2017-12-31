@@ -25,6 +25,8 @@
         <STOP> stop </STOP>
         <PAUSE> pause </PAUSE>
         <COLOR> color </COLOR>
+		<SHADER> shader </shader>
+		<SHADERM> shaderMode </SHADERM>
         <OPACITY> opacity </OPACITY>
         <FIT> fit </FIT>
         <FHORIZONTAL> fitHorizontal </FHORIZONTAL>

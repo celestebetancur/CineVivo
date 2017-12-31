@@ -2,16 +2,27 @@ layer: is an int between 0 and 9 / layer se refiere a un entero entre 0 y 9
 
 - Set window dimensions / Dimensiones de la pantalla:
 	windowShape width height
+- Set background color / Elegir l color del fondo:
+	backColor value(0-255)
+	backColor value value value
 - Fullscreen toggle / Entrar y salir de pantalla completa:
 	fullscreen (value 0,1)
 - Clean layers / Limpiar todas las capas:
 	clean
+- Play all loaded videos / reproducir todos los videos cargados:
+	playAll
+- Stop all loaded videos / detener todos los videos cargados:
+	stopAll
+- Pause all loaded videos / reproducir todos los videos cargados:
+	pauseAll
 - Load source / Cargar fuente de video:
 	layer load (video name, camera)
 - Free layer / Liberar una capa:
 	layer free
 - Load layer mask / Cargar una mascara sobre un layer:
 	layer mask (mask name)
+- Load a syphon source / Cargar una entrada syphon:
+	layer syphon value
 - Play / Correr video:
 	layer play
 - Pause / Pausar video:
@@ -48,6 +59,10 @@ layer: is an int between 0 and 9 / layer se refiere a un entero entre 0 y 9
 	layer color R G B
 - Opacity / Opacidad:
 	layer opacity value
+- Shaders activation /Activar shaders:
+	layer shader value(1/0)
+- Choose shader / escaper el shader:
+	layer shaderMode value
 - Fit / Ajustar:
 	layer fit
 - Horizontal fit / Ajustar horizontalmente:
