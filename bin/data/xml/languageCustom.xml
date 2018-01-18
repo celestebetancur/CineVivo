@@ -1,7 +1,7 @@
 <WORDS>
 	<NAME>
 		<WSHAPE> tamVentana </WSHAPE>
-        <FSCREEN> panCompleta </FSCREEN>
+        <FSCREEN> claroOscuro </FSCREEN>
         <CLEAN> un_declive </CLEAN>
 		<PLAYALL> todas </PLAYALL>
 		<PAUSEALL> serenas </PAUSEALL>
@@ -18,7 +18,7 @@
         <ROTX> rotEjeX </ROTX>
         <ROTY> rotEjeY </ROTY>
         <ROTZ> rotEjeZ </ROTZ>
-        <SIZE> tamano </SIZE>
+        <SIZE> intenso </SIZE>
         <WIDTH> ancho </WIDTH>
         <HEIGHT> alto </HEIGHT>
         <SCALE> escalar </SCALE>

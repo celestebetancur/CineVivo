@@ -1,11 +1,13 @@
 <WORDS>
 	<NAME>
 		<WSHAPE> windowShape </WSHAPE>
+        <WCENTER> worldCenter </WCENTER>
         <FSCREEN> fullscreen </FSCREEN>
         <CLEAN> clean </CLEAN>
         <FITAHOR> fitAllHorizontal </FITAHOR>
         <FITAVER> fitAllVertical </FITAVER>
         <LOAD> load</LOAD>
+        <SYPHON> syphon</SYPHON>
         <FREE> free </FREE>
         <MASK> mask </MASK>
         <RECTMODE> rectMode </RECTMODE>

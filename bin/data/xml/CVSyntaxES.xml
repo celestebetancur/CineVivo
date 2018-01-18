@@ -39,9 +39,11 @@
         <keyword>acoplar</keyword>
         <keyword>acoplarHor</keyword>
         <keyword>acoplarVer</keyword>
+        <keyword>syphon</keyword>
         
         <typename>CineVivo</typename>
 		
+        <function>centro</function>
 		<function>tamVentana</function>
 		<function>panCompleta</function>
         <function>limpiar</function>

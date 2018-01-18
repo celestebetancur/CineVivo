@@ -18,8 +18,6 @@ void ofApp::setup(){
     //--------------------filters setup -----------------------
     
     ambientLight = 155;
-    //models3D.loadModel("rggtrn.obj",false);
-    //models3D.setPosition(ofGetWidth()*0.5,ofGetHeight()*0.5,0);
     ofDisableArbTex();
     ofEnableSmoothing();
     ofEnableAlphaBlending();
@@ -35,6 +33,8 @@ void ofApp::setup(){
 
         shader[i].load("shadersGL2/shader");
 
+        worldCenterX[i] = 0;
+        worldCenterY[i] = 0;
         vX[i] = 0;
         vY[i] = 0;
         vIndex[i] = 0;
@@ -98,6 +98,7 @@ void ofApp::update(){
                     vIndexPlaying[i] = false;
                     syphonON[i] = false;
                     camON[i] = false;
+                    model3DOn[i] = false;
                     vX[i] = 0;
                     vY[i] = 0;
                     vRotX[i] = 0;
@@ -150,6 +151,7 @@ void ofApp::update(){
                             vIndex[n] = 0;
                             syphonON[n] = false;
                             vIndexPlaying[n] = false;
+                            model3DOn[n] = false;
                             vW[n] = cam.getWidth();
                             vH[n] = cam.getHeight();
                             camON[n] = true;
@@ -164,7 +166,7 @@ void ofApp::update(){
                             // simple filter chain
                             
                             FilterChain * charcoal = new FilterChain(cam.getWidth(), cam.getHeight(), "Charcoal");
-                            charcoal->addFilter(new BilateralFilter(cam.getWidth(), cam.getHeight(), 4, 4));
+                            //charcoal->addFilter(new BilateralFilter(cam.getWidth(), cam.getHeight(), 4, 4));
                             charcoal->addFilter(new GaussianBlurFilter(cam.getWidth(), cam.getHeight(), 2.f ));
                             charcoal->addFilter(new DoGFilter(cam.getWidth(), cam.getHeight(), 12, 1.2, 8, 0.99, 4));
                             filters[n].push_back(charcoal);
@@ -261,6 +263,7 @@ void ofApp::update(){
                         if(videoLC[n].isLoaded()){
                             camON[n] = false;
                             syphonON[n] = false;
+                            model3DOn[n] = false;
                             vIndex[n] = 1;
                             vIndexPlaying[n] = true;
                             vW[n] = videoLC[n].getWidth();
@@ -269,7 +272,7 @@ void ofApp::update(){
                             four[n].set(ofPoint(0,vH[n]));
                             three[n].set(ofPoint( vW[n] ,vH[n]));
                             two[n].set(ofPoint(vW[n],0));
-                            pix[n].allocate(vW[0] , vH[0], OF_PIXELS_RGBA);
+                            pix[n].allocate(vW[n] , vH[n], OF_PIXELS_RGBA);
                             texVideo[n].allocate(pix[n]);
                             
                             if(shaderLoaded[n] == false){
@@ -365,7 +368,30 @@ void ofApp::update(){
                         }
                     }
                 }
+                if (m.getAddress() == "/worldCenter"  &&  m.getNumArgs() == 3){
+                    worldCenterX[m.getArgAsInt(0)] = m.getArgAsInt(1);
+                    worldCenterY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+                }
                 if (m.getAddress() == "/free"  &&  m.getNumArgs() == 1){
+                    camON[m.getArgAsInt(0)] = false;
+                    model3DOn[m.getArgAsInt(0)] = false;
+                    videoLC[m.getArgAsInt(0)].stop();
+                    vIndex[m.getArgAsInt(0)] = 0;
+                    vX[m.getArgAsInt(0)] = 0;
+                    vY[m.getArgAsInt(0)] = 0;
+                    vRotX[m.getArgAsInt(0)] = 0;
+                    vRotY[m.getArgAsInt(0)] = 0;
+                    vRotZ[m.getArgAsInt(0)] = 0;
+                    vW[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getWidth();
+                    vH[m.getArgAsInt(0)] = videoLC[m.getArgAsInt(0)].getHeight();
+                    vSpeed[m.getArgAsInt(0)] = 1;
+                    vOpacity[m.getArgAsInt(0)] = 255;
+                    vColor[m.getArgAsInt(0)] = ofColor(255,255,255);
+                    maskedIndex[m.getArgAsInt(0)] = 0;
+                    shaderLoaded[m.getArgAsInt(0)] = false;
+                    filters[m.getArgAsInt(0)].clear();
+                }
+                if (m.getAddress() == "/load3D"  &&  m.getNumArgs() == 2){
                     camON[m.getArgAsInt(0)] = false;
                     videoLC[m.getArgAsInt(0)].stop();
                     vIndex[m.getArgAsInt(0)] = 0;
@@ -382,6 +408,12 @@ void ofApp::update(){
                     maskedIndex[m.getArgAsInt(0)] = 0;
                     shaderLoaded[m.getArgAsInt(0)] = false;
                     filters[m.getArgAsInt(0)].clear();
+                    string temp = "models/" + m.getArgAsString(1);
+                    model3DOn[m.getArgAsInt(0)] = true;
+                    models3D[m.getArgAsInt(0)].loadModel(temp,false);
+                    models3D[m.getArgAsInt(0)].setPosition(ofGetWidth()*0.5,ofGetHeight()*0.5,0);
+                    models3D[m.getArgAsInt(0)].setLoopStateForAllAnimations(OF_LOOP_NORMAL);
+                    models3D[m.getArgAsInt(0)].playAllAnimations();
                 }
                 if (m.getAddress() == "/mask"  &&  m.getNumArgs() == 2){
                     maskedIndex[m.getArgAsInt(0)] = 1;
@@ -465,7 +497,7 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/shaderMode"){
                     
-                    if(m.getArgAsInt(1) <= filters[m.getArgAsInt(0)].size()){
+                    if(m.getArgAsInt(1) < filters[m.getArgAsInt(0)].size()){
                         currentFilter[m.getArgAsInt(0)] = m.getArgAsInt(1);
                     } else {
                         ofLogNotice() << "Cinevivo[error]: shaderMode " + ofToString(m.getArgAsInt(1)) + " is not available";
@@ -525,6 +557,7 @@ void ofApp::update(){
                     int n = m.getArgAsInt(0);
                     syphonDirId[n] = m.getArgAsInt(1);
                     camON[n] = false;
+                    model3DOn[n] = false;
                     vIndex[n] = 0;
                     vIndexPlaying[n] = false;
                     syphonON[n] = true;
@@ -573,6 +606,10 @@ void ofApp::update(){
                 texVideo[i].loadData(pix[i]);
             }
         }
+        if(model3DOn[i] == true){
+            c++;
+            models3D[i].update();
+        }
     }
     numVideosLoaded = c;
 }
@@ -583,17 +620,20 @@ void ofApp::draw(){
     ofSetBackgroundColor(backgroundColor);
     
     for(int i = 0; i < LIM; i++){
-        if(vIndex[i] == 1 || camON[i] == 1 || syphonON[i] == 1){
-            if(rectMode[i] == 0)
-                ofSetRectMode(OF_RECTMODE_CORNER);
-            if(rectMode[i] == 1)
-                ofSetRectMode(OF_RECTMODE_CENTER);
-            ofSetColor(vColor[i],vOpacity[i]);
+        if(vIndex[i] == 1 || camON[i] == 1 || syphonON[i] == 1 || model3DOn[i] == 1){
             ofPushMatrix();
-            ofTranslate(vX[i],vY[i]);
+            ofTranslate(worldCenterX[i],worldCenterY[i]);
+            ofPushMatrix();
             ofRotateX(vRotX[i]);
             ofRotateY(vRotY[i]);
             ofRotateZ(vRotZ[i]);
+            if(rectMode[i] == 0)
+                ofTranslate(0,0);
+            if(rectMode[i] == 1){
+                ofTranslate(-vW[i]/2,-vH[i]/2);
+            }
+            ofSetColor(vColor[i],vOpacity[i]);
+            ofTranslate(vX[i],vY[i]);
             ofScale(vScaleX[i],vScaleY[i]);
             videoLC[i].setSpeed(vSpeed[i]);
             if(shaderOn[i] == true){
@@ -616,7 +656,7 @@ void ofApp::draw(){
             }
             if(syphonON[i] == true && syphonDir[i].isValidIndex(syphonDirId[i])){
                 syphonClient[i].bind();
-                syphonClient[i].getTexture().draw(0,0);
+                syphonClient[i].getTexture().draw(one[i],two[i],three[i],four[i]);
                 syphonClient[i].unbind();
             }
             if(maskedIndex[i] == 1 && mask[i].isAllocated()){
@@ -627,27 +667,23 @@ void ofApp::draw(){
                 filters[i][currentFilter[i]]->end();
                 ofPopMatrix();
             }
+            if(model3DOn[i] == true){
+                ofSetColor(255);
+                ofEnableBlendMode(OF_BLENDMODE_ALPHA);
+                ofEnableDepthTest();
+                light.enable();
+                ofEnableSeparateSpecularLight();
+                models3D[i].drawFaces();
+                ofDisableDepthTest();
+                ofDisableBlendMode();
+                ofDisableSeparateSpecularLight();
+            }
             //fbo[i].end();
             //fbo[i].draw(0, 0);
             ofPopMatrix();
+            ofPopMatrix();
         }
     }
-    /*
-     // TODO: 3D models
-     ofSetColor(200,10,235);
-     ofEnableBlendMode(OF_BLENDMODE_ALPHA);
-     ofEnableDepthTest();
-     light.enable();
-     ofEnableSeparateSpecularLight();
-     ofPushMatrix();
-     ofTranslate(models3D.getPosition().x + 300,models3D.getPosition().y + 200,(sin(ofGetElapsedTimef()) * -100)-400);
-     ofRotateY(180);
-     ofRotateX(-115);
-     models3D.drawFaces();
-     ofPopMatrix();
-     ofDisableDepthTest();
-     ofDisableBlendMode();
-     ofDisableSeparateSpecularLight();*/
 }
 
 //--------------------------------------------------------------
@@ -672,7 +708,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    
+    ofLogNotice() << "x: " << x << ", y: " << y;
 }
 
 //--------------------------------------------------------------

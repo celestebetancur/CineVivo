@@ -272,6 +272,14 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:LOAD3D","load3D") && texto.size() == 3){
+                    string temp = "/load3D " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/load3D");
+                    s.addIntArg(numV);
+                    s.addStringArg(texto[2]);
+                    osc.sendMessage(s);
+                }
                 if(texto[1] == XML.getValue("WORDS:NAME:FREE","free") && texto.size() == 2){
                     string temp = "/free " + ofToString(numV);
                     ofLogNotice() << "CineVivo[send]: " << temp;
@@ -293,6 +301,15 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     s.setAddress("/rectMode");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:WCENTER","worldCenter") && texto.size() == 4){
+                    string temp = "/worldCenter " + texto[1] + " " + texto[2]+ " " + texto[3];
+                    ofLogNotice() << "CineVivo[setup]: " << temp;
+                    s.setAddress("/worldCenter");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    s.addIntArg(ofToInt(texto[3]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:POS","pos") && texto.size() == 4){
@@ -485,6 +502,16 @@ void GuiApp::executeScriptEvent(int &whichEditor) {
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/fitVertical");
                     s.addIntArg(numV);
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:POINTS","points") && texto.size() == 10){
+                    string temp = "/points " + ofToString(numV);
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/points");
+                    s.addIntArg(numV);
+                    for(int i = 2; i < 10; i++){
+                        s.addIntArg(ofToInt(texto[i]));
+                    }
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SYPHON","syphon") && texto.size() == 3){

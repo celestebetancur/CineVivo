@@ -1,11 +1,13 @@
 <WORDS>
 	<NAME>
 		<WSHAPE> tamVentana </WSHAPE>
+        <WCENTER> centro </WCENTER>
         <FSCREEN> panCompleta </FSCREEN>
         <CLEAN> limpiar </CLEAN>
         <FITAHOR> acoplarActHor </FITAHOR>
         <FITAVER> acoplarActVer </FITAVER>
         <LOAD> cargar </LOAD>
+        <SYPHON> syphon </SYPHON>
         <FREE> liberar </FREE>
         <MASK> enmascarar </MASK>
         <RECTMODE> refCoord </RECTMODE>

@@ -50,11 +50,12 @@ public:
     ofVideoGrabber cam;
     bool camON[LIM];
 
-    int rectMode[LIM];
-    
     ofVideoPlayer videoLC[LIM];
     ofImage mask[LIM];
     
+    int worldCenterX[LIM];
+    int worldCenterY[LIM];
+    int rectMode[LIM];
     int vX[LIM];
     int vY[LIM];
     int vIndex[LIM];
@@ -85,7 +86,8 @@ public:
     vector<AbstractFilter *> filters[LIM];
     bool shaderLoaded[LIM];
     
-    //ofxAssimpModelLoader models3D;
+    ofxAssimpModelLoader models3D[LIM];
+    bool model3DOn[LIM];
     ofLight light;
     ofLight lightC;
     

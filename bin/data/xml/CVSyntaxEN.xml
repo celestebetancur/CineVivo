@@ -40,9 +40,12 @@
         <keyword>fitHorizontal</keyword>
         <keyword>fitVertical</keyword>
 		<keyword>shader</keyword> 
-		<keyword>shaderMode</keyword>       
+		<keyword>shaderMode</keyword>
+        <keyword>syphon</keyword>
+        
         <typename>CineVivo</typename>
 		
+        <function>worldCenter</function>
 		<function>windowShape</function>
 		<function>fullscreen</function>
         <function>clean</function>
