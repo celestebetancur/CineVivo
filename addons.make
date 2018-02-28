@@ -1,6 +1,7 @@
 ofxAssimpModelLoader
 ofxFilterLibrary
 ofxGLEditor
+ofxLayerMask
 ofxOsc
 ofxSyphon
 ofxXmlSettings

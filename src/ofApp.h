@@ -6,7 +6,12 @@
 #include "ofxFilterLibrary.h"
 #include "ofxAssimpModelLoader.h"
 #include "GuiApp.h"
-#include "ofxSyphon.h"
+
+#if (defined(__APPLE__) && defined(__MACH__))
+    #include "ofxSyphon.h"
+#endif
+
+#include "ofxLayerMask.h"
 
 #define WIDTH 1280
 #define HEIGHT 800
@@ -51,7 +56,7 @@ public:
     bool camON[LIM];
 
     ofVideoPlayer videoLC[LIM];
-    ofImage mask[LIM];
+    //ofImage mask[LIM];
     
     int worldCenterX[LIM];
     int worldCenterY[LIM];
@@ -91,13 +96,18 @@ public:
     ofLight light;
     ofLight lightC;
     
+#if (defined(__APPLE__) && defined(__MACH__))
     // syphon
     ofxSyphonServerDirectory syphonDir[LIM];
     ofxSyphonClient syphonClient[LIM];
     bool syphonON[LIM];
     int syphonDirId[LIM];
+#endif
     
     // text editor shared pointer
     shared_ptr<GuiApp> gui;
+    
+    ofxLayerMask masker; //testing
+    int shape;
 };
 

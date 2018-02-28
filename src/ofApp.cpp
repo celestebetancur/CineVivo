@@ -2,6 +2,11 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
+    
+    masker.setup(640, 480);
+    masker.newLayer();
+    shape = 0;
+    ofSetCircleResolution(60);
 
     ofSetWindowShape(640, 480);
     ofSetWindowTitle("CineVivo");
@@ -52,16 +57,18 @@ void ofApp::setup(){
         pix[i].allocate(WIDTH, HEIGHT, OF_PIXELS_RGBA);
         texVideo[i].allocate(pix[i]);
         rectMode[i] = 0;
-        mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
         maskedIndex[i] == 0;
         currentFilter[i] = 0;
         shaderOn[i] = false;
         shaderLoaded[i] = false;
+
+#if (defined(__APPLE__) && defined(__MACH__))
         //-------------------Syphon--------------------------------
         syphonDir[i].setup();
         syphonClient[i].setup();
         syphonDirId[i] = -1;
         syphonON[i] = false;
+#endif
     }
 }
 
@@ -96,7 +103,9 @@ void ofApp::update(){
                     videoLC[i].stop();
                     vIndex[i] = 0;
                     vIndexPlaying[i] = false;
+#if (defined(__APPLE__) && defined(__MACH__))
                     syphonON[i] = false;
+#endif
                     camON[i] = false;
                     model3DOn[i] = false;
                     vX[i] = 0;
@@ -149,7 +158,9 @@ void ofApp::update(){
                         cam.setup(640, 480);
                         if(cam.isInitialized()){
                             vIndex[n] = 0;
+#if (defined(__APPLE__) && defined(__MACH__))
                             syphonON[n] = false;
+#endif
                             vIndexPlaying[n] = false;
                             model3DOn[n] = false;
                             vW[n] = cam.getWidth();
@@ -262,7 +273,9 @@ void ofApp::update(){
                         videoLC[n].play();
                         if(videoLC[n].isLoaded()){
                             camON[n] = false;
+#if (defined(__APPLE__) && defined(__MACH__))
                             syphonON[n] = false;
+#endif
                             model3DOn[n] = false;
                             vIndex[n] = 1;
                             vIndexPlaying[n] = true;
@@ -417,8 +430,15 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/mask"  &&  m.getNumArgs() == 2){
                     maskedIndex[m.getArgAsInt(0)] = 1;
-                    string temp = "mask/" + m.getArgAsString(1) + ".png";
-                    mask[m.getArgAsInt(0)].load(temp);
+                    if(m.getArgAsString(1) == "circle"){
+                        shape = 0;
+                    }
+                    if(m.getArgAsString(1) == "rectangle"){
+                        shape = 1;
+                    }
+                    if(m.getArgAsString(1) == "triangle"){
+                        shape = 2;
+                    }
                 }
                 if (m.getAddress() == "/rectMode" && m.getNumArgs() == 2){
                     rectMode[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -486,9 +506,11 @@ void ofApp::update(){
                     vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
                 }
                 if (m.getAddress() == "/shader"){
+#if (defined(__APPLE__) && defined(__MACH__))
                     if(syphonON[m.getArgAsInt(0)] == 1)
                         ofLogNotice() << "CineVivo[notice]: Shaders can not be applied to syphon inputs";
                     else{
+#endif
                         if(m.getArgAsInt(1) == 1)
                             shaderOn[m.getArgAsInt(0)] = true;
                         if(m.getArgAsInt(1) == 0)
@@ -553,6 +575,7 @@ void ofApp::update(){
                     three[m.getArgAsInt(0)].set(ofPoint(m.getArgAsInt(5),m.getArgAsInt(6)));
                     four[m.getArgAsInt(0)].set(ofPoint(m.getArgAsInt(7),m.getArgAsInt(8)));
                 }
+#if (defined(__APPLE__) && defined(__MACH__))
                 if (m.getAddress() == "/syphon"){
                     int n = m.getArgAsInt(0);
                     syphonDirId[n] = m.getArgAsInt(1);
@@ -564,6 +587,7 @@ void ofApp::update(){
                     vW[n] = syphonClient[n].getWidth();
                     vH[n] = syphonClient[n].getHeight();
                     shaderOn[n] = false;
+#endif
                 }
                 //----------------------- get functions ------------------------
                 
@@ -620,7 +644,11 @@ void ofApp::draw(){
     ofSetBackgroundColor(backgroundColor);
     
     for(int i = 0; i < LIM; i++){
-        if(vIndex[i] == 1 || camON[i] == 1 || syphonON[i] == 1 || model3DOn[i] == 1){
+        if(vIndex[i] == 1 || camON[i] == 1 ||
+#if (defined(__APPLE__) && defined(__MACH__))
+           syphonON[i] == 1 ||
+#endif
+           model3DOn[i] == 1){
             ofPushMatrix();
             ofTranslate(worldCenterX[i],worldCenterY[i]);
             ofPushMatrix();
@@ -636,37 +664,47 @@ void ofApp::draw(){
             ofTranslate(vX[i],vY[i]);
             ofScale(vScaleX[i],vScaleY[i]);
             videoLC[i].setSpeed(vSpeed[i]);
-            if(shaderOn[i] == true){
+            if(shaderOn[i] == true && model3DOn[i] == false){
                 //shader[i].begin();
                 ofPushMatrix();
                 ofScale(-1, 1);
                 ofTranslate(-vW[i], 0);
                 filters[i][currentFilter[i]]->begin();
             }
-            //fbo[i].begin();
             if(shaderOn[i] == true){
                 //shader[i].setUniform1f("alpha", sin(ofGetElapsedTimef()));
             }
             if(vIndexPlaying[i] == true){
+                if(maskedIndex[i] == 1){
+                    masker.beginLayer();
+                }
                 texVideo[i].draw(one[i], two[i], three[i], four[i]);
+                if(maskedIndex[i] == 1){
+                    masker.endLayer();
+                }
             }
             if(camON[i] == true){
-                //cam.getTexture().draw(one[i],two[i],three[i],four[i]);
+                if(maskedIndex[i] == 1){
+                    masker.beginLayer();
+                }
                 texVideo[i].draw(one[i], two[i], three[i], four[i]);
+                if(maskedIndex[i] == 1){
+                    masker.endLayer();
+                }
             }
+#if (defined(__APPLE__) && defined(__MACH__))
             if(syphonON[i] == true && syphonDir[i].isValidIndex(syphonDirId[i])){
+                if(maskedIndex[i] == 1){
+                    masker.beginLayer();
+                }
                 syphonClient[i].bind();
                 syphonClient[i].getTexture().draw(one[i],two[i],three[i],four[i]);
                 syphonClient[i].unbind();
+                if(maskedIndex[i] == 1){
+                    masker.endLayer();
+                }
             }
-            if(maskedIndex[i] == 1 && mask[i].isAllocated()){
-                mask[i].getTexture().draw(one[i], two[i], three[i], four[i]);
-            }
-            if(shaderOn[i] == true){
-                //shader[i].end();
-                filters[i][currentFilter[i]]->end();
-                ofPopMatrix();
-            }
+#endif
             if(model3DOn[i] == true){
                 ofSetColor(255);
                 ofEnableBlendMode(OF_BLENDMODE_ALPHA);
@@ -678,8 +716,27 @@ void ofApp::draw(){
                 ofDisableBlendMode();
                 ofDisableSeparateSpecularLight();
             }
-            //fbo[i].end();
-            //fbo[i].draw(0, 0);
+            if(shaderOn[i] == true && model3DOn[i] == false){
+                //shader[i].end();
+                filters[i][currentFilter[i]]->end();
+                ofPopMatrix();
+            }
+            if(maskedIndex[i] == 1){
+                masker.beginMask();
+                {
+                    ofClear(0, 0, 0, 255);
+                    ofSetColor(255);
+                    if(shape == 0)
+                        ofDrawCircle(320,240, 150);
+                    if(shape == 1)
+                        ofDrawRectangle(200, 200, 200, 200);
+                    if(shape == 2)
+                        ofDrawTriangle(0, ofGetHeight(), ofGetWidth()/2, 0, ofGetWidth(), ofGetHeight());
+                }
+                masker.endMask();
+                masker.draw();
+                masker.drawOverlay();
+            }
             ofPopMatrix();
             ofPopMatrix();
         }

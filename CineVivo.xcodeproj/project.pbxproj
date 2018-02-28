@@ -1160,6 +1160,221 @@
 				<key>sourceTree</key>
 				<string>SOURCE_ROOT</string>
 			</dict>
+			<key>7EFF2709948EE75A4BA3BF80</key>
+			<dict>
+				<key>fileRef</key>
+				<string>95F5452C58F13212B5099E64</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>95F5452C58F13212B5099E64</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_GL3.vert</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_GL3.vert</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>7109C5297DF12D28548F1E82</key>
+			<dict>
+				<key>fileRef</key>
+				<string>94CC084F31DBD2C66E3DBEB9</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>94CC084F31DBD2C66E3DBEB9</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_GL3.frag</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_GL3.frag</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>CFC55146A17C49881A095458</key>
+			<dict>
+				<key>fileRef</key>
+				<string>6B1EE0E710D517C3317B38A7</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>6B1EE0E710D517C3317B38A7</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_GL2.vert</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_GL2.vert</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>0F72FC16F5D8C70F532317E3</key>
+			<dict>
+				<key>fileRef</key>
+				<string>E3D0D0CBB99F266909832764</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>E3D0D0CBB99F266909832764</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_GL2.frag</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_GL2.frag</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>D57D6AE7066A76AF5E633AC8</key>
+			<dict>
+				<key>fileRef</key>
+				<string>C48B1EA263E7E4D4C4D70C16</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>C48B1EA263E7E4D4C4D70C16</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_ES2.vert</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_ES2.vert</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>E74DC01A078204FA75FD4D0D</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>2E0493A3C19C349A27FC7D25</string>
+					<string>C48B1EA263E7E4D4C4D70C16</string>
+					<string>E3D0D0CBB99F266909832764</string>
+					<string>6B1EE0E710D517C3317B38A7</string>
+					<string>94CC084F31DBD2C66E3DBEB9</string>
+					<string>95F5452C58F13212B5099E64</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>shader</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>F9BB26B7E6520AF05BBFAA14</key>
+			<dict>
+				<key>fileRef</key>
+				<string>2E0493A3C19C349A27FC7D25</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>2E0493A3C19C349A27FC7D25</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>file</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>alphaMask_ES2.frag</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/shader/alphaMask_ES2.frag</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>458AE5917CB33942884049CC</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.c.h</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxLayerMask.h</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/ofxLayerMask.h</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
+			<key>F996C14C51CDE505FA9BD196</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>A9E4628DEE13794A92581E42</string>
+					<string>458AE5917CB33942884049CC</string>
+					<string>E74DC01A078204FA75FD4D0D</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>src</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>DB48ECEB4A5AD24AB25E3141</key>
+			<dict>
+				<key>children</key>
+				<array>
+					<string>F996C14C51CDE505FA9BD196</string>
+				</array>
+				<key>isa</key>
+				<string>PBXGroup</string>
+				<key>name</key>
+				<string>ofxLayerMask</string>
+				<key>sourceTree</key>
+				<string>&lt;group&gt;</string>
+			</dict>
+			<key>853F053FBB0E1A5C69AE0829</key>
+			<dict>
+				<key>fileRef</key>
+				<string>A9E4628DEE13794A92581E42</string>
+				<key>isa</key>
+				<string>PBXBuildFile</string>
+			</dict>
+			<key>A9E4628DEE13794A92581E42</key>
+			<dict>
+				<key>explicitFileType</key>
+				<string>sourcecode.cpp.cpp</string>
+				<key>fileEncoding</key>
+				<string>30</string>
+				<key>isa</key>
+				<string>PBXFileReference</string>
+				<key>name</key>
+				<string>ofxLayerMask.cpp</string>
+				<key>path</key>
+				<string>../../../addons/ofxLayerMask/src/ofxLayerMask.cpp</string>
+				<key>sourceTree</key>
+				<string>SOURCE_ROOT</string>
+			</dict>
 			<key>CD186F42EA22DF1DCDA1B408</key>
 			<dict>
 				<key>explicitFileType</key>
@@ -5528,6 +5743,7 @@
 					<string>2C8F245ACBE61E28646C17F2</string>
 					<string>E1DF4A358BE4E8201D5B07B9</string>
 					<string>9CF97C9C767B62FAD6F26EFC</string>
+					<string>DB48ECEB4A5AD24AB25E3141</string>
 					<string>E6053AB7FEC63D5F83825B88</string>
 					<string>7F3C04577424427D348B1425</string>
 					<string>1F4FB5C423662B96ADFDCC0B</string>
@@ -5707,6 +5923,8 @@
 						<string>../../../addons/ofxGLEditor/libs/fontstash</string>
 						<string>../../../addons/ofxGLEditor/libs/fontstash/include</string>
 						<string>../../../addons/ofxGLEditor/src</string>
+						<string>../../../addons/ofxLayerMask/src</string>
+						<string>../../../addons/ofxLayerMask/src/shader</string>
 						<string>../../../addons/ofxOsc/libs</string>
 						<string>../../../addons/ofxOsc/libs/oscpack</string>
 						<string>../../../addons/ofxOsc/libs/oscpack/src</string>
@@ -5803,6 +6021,8 @@
 						<string>../../../addons/ofxGLEditor/libs/fontstash</string>
 						<string>../../../addons/ofxGLEditor/libs/fontstash/include</string>
 						<string>../../../addons/ofxGLEditor/src</string>
+						<string>../../../addons/ofxLayerMask/src</string>
+						<string>../../../addons/ofxLayerMask/src/shader</string>
 						<string>../../../addons/ofxOsc/libs</string>
 						<string>../../../addons/ofxOsc/libs/oscpack</string>
 						<string>../../../addons/ofxOsc/libs/oscpack/src</string>
@@ -5960,6 +6180,13 @@
 					<string>507CEDC155E968FCBD9FF33C</string>
 					<string>4AFCB170EFD78ADCCFAAF6F2</string>
 					<string>6E519BD2FB1F63665E6903B5</string>
+					<string>853F053FBB0E1A5C69AE0829</string>
+					<string>F9BB26B7E6520AF05BBFAA14</string>
+					<string>D57D6AE7066A76AF5E633AC8</string>
+					<string>0F72FC16F5D8C70F532317E3</string>
+					<string>CFC55146A17C49881A095458</string>
+					<string>7109C5297DF12D28548F1E82</string>
+					<string>7EFF2709948EE75A4BA3BF80</string>
 					<string>72A929D3561B8232A182ABFC</string>
 					<string>5864AD82E20F15536D054EA3</string>
 					<string>4ADB88E2FB52E76A471065DE</string>
@@ -6087,6 +6314,8 @@
 						<string>../../../addons/ofxGLEditor/libs/fontstash</string>
 						<string>../../../addons/ofxGLEditor/libs/fontstash/include</string>
 						<string>../../../addons/ofxGLEditor/src</string>
+						<string>../../../addons/ofxLayerMask/src</string>
+						<string>../../../addons/ofxLayerMask/src/shader</string>
 						<string>../../../addons/ofxOsc/libs</string>
 						<string>../../../addons/ofxOsc/libs/oscpack</string>
 						<string>../../../addons/ofxOsc/libs/oscpack/src</string>
@@ -6174,6 +6403,8 @@
 						<string>../../../addons/ofxGLEditor/libs/fontstash</string>
 						<string>../../../addons/ofxGLEditor/libs/fontstash/include</string>
 						<string>../../../addons/ofxGLEditor/src</string>
+						<string>../../../addons/ofxLayerMask/src</string>
+						<string>../../../addons/ofxLayerMask/src/shader</string>
 						<string>../../../addons/ofxOsc/libs</string>
 						<string>../../../addons/ofxOsc/libs/oscpack</string>
 						<string>../../../addons/ofxOsc/libs/oscpack/src</string>
