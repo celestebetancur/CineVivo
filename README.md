@@ -23,3 +23,6 @@ cmd + 0 permite acceder a una consola:
   list-videos, este comando hace una lista de los nombres de los videos disponibles en la carpeta -videos-
   list-mask, este comando hace una lista de los nombres de las mascaras disponibles en la carpeta -mask-
   help, abre el help.txt en el buffer 9 que puede accederse con cmd + 9
+
+
+Para compilar en Linux, debe eliminar del archivo addons.make la linea que incluye ofxSyphon.
