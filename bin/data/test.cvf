@@ -1,0 +1,8 @@
+//1 load camera
+1 scale 0.5 1
+1 shader 1
+1 shaderMode 4
+1 posX 200
+2 load fluido
+2 scale 0.3 0.3
+2 rotY 45

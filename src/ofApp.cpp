@@ -2,7 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
+
     masker.setup(640, 480);
     masker.newLayer();
     shape = 0;
@@ -11,7 +11,7 @@ void ofApp::setup(){
     ofSetWindowShape(640, 480);
     ofSetWindowTitle("CineVivo");
     ofSetVerticalSync(false);
-    
+
     XML.load ("xml/OSCConf.xml");
     //----------------------OSC setup -------------------------
     portOut = XML.getValue("PORT:NAME:OUT",5613);
@@ -19,9 +19,9 @@ void ofApp::setup(){
     //OSC in
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
-    
+
     //--------------------filters setup -----------------------
-    
+
     ambientLight = 155;
     ofDisableArbTex();
     ofEnableSmoothing();
@@ -30,10 +30,10 @@ void ofApp::setup(){
     ofSetGlobalAmbientColor(ambientLight);
 
     //-----------------------------------------------------------
-    
+
     numVideosLoaded = 0;
     backgroundColor = ofColor(0,0,0);
-    
+
     for(int i = 0; i < LIM; i++){
 
         shader[i].load("shadersGL2/shader");
@@ -74,12 +74,12 @@ void ofApp::setup(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    
+
     while (reciever.hasWaitingMessages()){
-        
+
         ofxOscMessage m;
         reciever.getNextMessage(&m);
-        
+
         for(int i  = 0; i < m.getNumArgs(); i++){
             if (m.getAddress() == "/windowShape"  &&  m.getNumArgs() == 2){
                 ofSetWindowShape(m.getArgAsInt(0), m.getArgAsInt(1));
@@ -172,18 +172,18 @@ void ofApp::update(){
                             two[n].set(ofPoint(vW[n],0));
                             pix[n].allocate(cam.getWidth() , cam.getHeight(), OF_PIXELS_RGB);
                             texVideo[n].allocate(pix[n]);
-                            
+
                             if(shaderLoaded[n] == false){
                             // simple filter chain
-                            
+
                             FilterChain * charcoal = new FilterChain(cam.getWidth(), cam.getHeight(), "Charcoal");
                             //charcoal->addFilter(new BilateralFilter(cam.getWidth(), cam.getHeight(), 4, 4));
                             charcoal->addFilter(new GaussianBlurFilter(cam.getWidth(), cam.getHeight(), 2.f ));
                             charcoal->addFilter(new DoGFilter(cam.getWidth(), cam.getHeight(), 12, 1.2, 8, 0.99, 4));
                             filters[n].push_back(charcoal);
-                            
+
                             // Basic filter examples
-                            
+
                             filters[n].push_back(new HalftoneFilter(cam.getWidth(), cam.getHeight(), 0.01));
                             filters[n].push_back(new CrosshatchFilter(cam.getWidth(), cam.getHeight()));
                             filters[n].push_back(new KuwaharaFilter(6));
@@ -210,43 +210,43 @@ void ofApp::update(){
                             filters[n].push_back(new HarrisCornerDetectionFilter(cam.getTexture()));
                             filters[n].push_back(new MotionDetectionFilter(cam.getTexture()));
                             filters[n].push_back(new LowPassFilter(cam.getWidth(), cam.getHeight(), 0.9));
-                            
+
                             // blending examples
-                            
+
                             ofImage wes = ofImage("img/wes.jpg");
                             ChromaKeyBlendFilter * chroma = new ChromaKeyBlendFilter(ofVec3f(0.f, 1.f, 0.f), 0.4);
                             chroma->setSecondTexture(wes.getTexture());
                             filters[n].push_back(chroma);
-                            
+
                             filters[n].push_back(new DisplacementFilter("img/mandel.jpg", cam.getWidth(), cam.getHeight(), 25.f));
                             filters[n].push_back(new PoissonBlendFilter(wes.getTexture(), cam.getWidth(),cam.getHeight(), 2.0));
                             filters[n].push_back(new DisplacementFilter("img/glass/3.jpg", cam.getWidth(), cam.getHeight(), 40.0));
                             filters[n].push_back(new ExclusionBlendFilter(wes.getTexture()));
-                            
+
                             // Convolution filters
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter1 = new Abstract3x3ConvolutionFilter(cam.getWidth(),cam.getHeight());
                             convolutionFilter1->setMatrix(-1, 0, 1, -2, 0, 2, -1, 0, 1);
                             filters[n].push_back(convolutionFilter1);
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter2 = new Abstract3x3ConvolutionFilter(cam.getWidth(),cam.getHeight());
                             convolutionFilter2->setMatrix(4, 4, 4, 4, -32, 4, 4,  4, 4);
                             filters[n].push_back(convolutionFilter2);
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter3 = new Abstract3x3ConvolutionFilter(cam.getWidth(),cam.getHeight());
                             convolutionFilter3->setMatrix(1.2,  1.2, 1.2, 1.2, -9.0, 1.2, 1.2,  1.2, 1.2);
                             filters[n].push_back(convolutionFilter3);
-                            
+
                             //  daisy-chain a bunch of filters
-                            
+
                             FilterChain * foggyTexturedGlassChain = new FilterChain(cam.getWidth(),cam.getHeight(), "Weird Glass");
                             foggyTexturedGlassChain->addFilter(new PerlinPixellationFilter(cam.getWidth(),cam.getHeight(), 13.f));
                             foggyTexturedGlassChain->addFilter(new EmbossFilter(cam.getWidth(),cam.getHeight(), 0.5));
                             foggyTexturedGlassChain->addFilter(new GaussianBlurFilter(cam.getWidth(),cam.getHeight(), 3.f));
                             filters[n].push_back(foggyTexturedGlassChain);
-                            
+
                             // unimaginative filter chain
-                            
+
                             FilterChain * watercolorChain = new FilterChain(cam.getWidth(),cam.getHeight(), "Monet");
                             watercolorChain->addFilter(new KuwaharaFilter(9));
                             watercolorChain->addFilter(new LookupFilter(cam.getWidth(),cam.getHeight(), "img/lookup_miss_etikate.png"));
@@ -254,13 +254,13 @@ void ofApp::update(){
                             watercolorChain->addFilter(new PoissonBlendFilter("img/canvas_texture.jpg",cam.getWidth(),cam.getHeight(), 2.0));
                             watercolorChain->addFilter(new VignetteFilter());
                             filters[n].push_back(watercolorChain);
-                            
+
                             //  random gradient map for posterity
-                            
+
                             vector<GradientMapColorPoint> colors;
                             for (float percent=0.0; percent<=1.0; percent+= 0.1)
                                 colors.push_back( GradientMapColorPoint(ofRandomuf(),ofRandomuf(),ofRandomuf(),percent) );
-                                
+
                             filters[n].push_back(new GradientMapFilter(colors));
                             shaderLoaded[n] = true;
                             }
@@ -287,17 +287,17 @@ void ofApp::update(){
                             two[n].set(ofPoint(vW[n],0));
                             pix[n].allocate(vW[n] , vH[n], OF_PIXELS_RGBA);
                             texVideo[n].allocate(pix[n]);
-                            
+
                             if(shaderLoaded[n] == false){
-                            
+
                             FilterChain * charcoal = new FilterChain(videoLC[n].getWidth(), videoLC[n].getHeight(), "Charcoal");
                             //charcoal->addFilter(new BilateralFilter(videoLC[n].getWidth(), videoLC[n].getHeight(), 4, 4));
                             charcoal->addFilter(new GaussianBlurFilter(videoLC[n].getWidth(), videoLC[n].getHeight(), 2.f ));
                             charcoal->addFilter(new DoGFilter(videoLC[n].getWidth(), videoLC[n].getHeight(), 12, 1.2, 8, 0.99, 4));
                             filters[n].push_back(charcoal);
-                            
+
                             // Basic filter examples
-                            
+
                             filters[n].push_back(new HalftoneFilter(videoLC[n].getWidth(), videoLC[n].getHeight(), 0.01));
                             filters[n].push_back(new CrosshatchFilter(videoLC[n].getWidth(), videoLC[n].getHeight()));
                             filters[n].push_back(new KuwaharaFilter(6));
@@ -324,43 +324,43 @@ void ofApp::update(){
                             filters[n].push_back(new HarrisCornerDetectionFilter(videoLC[n].getTexture()));
                             filters[n].push_back(new MotionDetectionFilter(videoLC[n].getTexture()));
                             filters[n].push_back(new LowPassFilter(videoLC[n].getWidth(), videoLC[n].getHeight(), 0.9));
-                            
+
                             // blending examples
-                            
+
                             ofImage wes = ofImage("img/wes.jpg");
                             ChromaKeyBlendFilter * chroma = new ChromaKeyBlendFilter(ofVec3f(0.f, 1.f, 0.f), 0.4);
                             chroma->setSecondTexture(wes.getTexture());
                             filters[n].push_back(chroma);
-                            
+
                             filters[n].push_back(new DisplacementFilter("img/mandel.jpg", videoLC[n].getWidth(), videoLC[n].getHeight(), 25.f));
                             filters[n].push_back(new PoissonBlendFilter(wes.getTexture(), videoLC[n].getWidth(),videoLC[n].getHeight(), 2.0));
                             filters[n].push_back(new DisplacementFilter("img/glass/3.jpg", videoLC[n].getWidth(), videoLC[n].getHeight(), 40.0));
                             filters[n].push_back(new ExclusionBlendFilter(wes.getTexture()));
-                            
+
                             // Convolution filters
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter1 = new Abstract3x3ConvolutionFilter(videoLC[n].getWidth(),videoLC[n].getHeight());
                             convolutionFilter1->setMatrix(-1, 0, 1, -2, 0, 2, -1, 0, 1);
                             filters[n].push_back(convolutionFilter1);
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter2 = new Abstract3x3ConvolutionFilter(videoLC[n].getWidth(),videoLC[n].getHeight());
                             convolutionFilter2->setMatrix(4, 4, 4, 4, -32, 4, 4,  4, 4);
                             filters[n].push_back(convolutionFilter2);
-                            
+
                             Abstract3x3ConvolutionFilter * convolutionFilter3 = new Abstract3x3ConvolutionFilter(videoLC[n].getWidth(),videoLC[n].getHeight());
                             convolutionFilter3->setMatrix(1.2,  1.2, 1.2, 1.2, -9.0, 1.2, 1.2,  1.2, 1.2);
                             filters[n].push_back(convolutionFilter3);
-                            
+
                             //  daisy-chain a bunch of filters
-                            
+
                             FilterChain * foggyTexturedGlassChain = new FilterChain(videoLC[n].getWidth(),videoLC[n].getHeight(), "Weird Glass");
                             foggyTexturedGlassChain->addFilter(new PerlinPixellationFilter(videoLC[n].getWidth(),videoLC[n].getHeight(), 13.f));
                             foggyTexturedGlassChain->addFilter(new EmbossFilter(videoLC[n].getWidth(),videoLC[n].getHeight(), 0.5));
                             foggyTexturedGlassChain->addFilter(new GaussianBlurFilter(videoLC[n].getWidth(),videoLC[n].getHeight(), 3.f));
                             filters[n].push_back(foggyTexturedGlassChain);
-                            
+
                             // unimaginative filter chain
-                            
+
                             FilterChain * watercolorChain = new FilterChain(videoLC[n].getWidth(),videoLC[n].getHeight(), "Monet");
                             watercolorChain->addFilter(new KuwaharaFilter(9));
                             watercolorChain->addFilter(new LookupFilter(videoLC[n].getWidth(),videoLC[n].getHeight(), "img/lookup_miss_etikate.png"));
@@ -368,14 +368,14 @@ void ofApp::update(){
                             watercolorChain->addFilter(new PoissonBlendFilter("img/canvas_texture.jpg",videoLC[n].getWidth(),videoLC[n].getHeight(), 2.0));
                             watercolorChain->addFilter(new VignetteFilter());
                             filters[n].push_back(watercolorChain);
-                            
+
                             //  random gradient map for posterity
-                            
+
                             vector<GradientMapColorPoint> colors;
                             for (float percent=0.0; percent<=1.0; percent+= 0.1)
                                 colors.push_back( GradientMapColorPoint(ofRandomuf(),ofRandomuf(),ofRandomuf(),percent) );
                             filters[n].push_back(new GradientMapFilter(colors));
-                            
+
                             shaderLoaded[n] = true;
                             }
                         }
@@ -515,10 +515,12 @@ void ofApp::update(){
                             shaderOn[m.getArgAsInt(0)] = true;
                         if(m.getArgAsInt(1) == 0)
                             shaderOn[m.getArgAsInt(0)] = false;
+#if (defined(__APPLE__) && defined(__MACH__))
                     }
+#endif
                 }
                 if (m.getAddress() == "/shaderMode"){
-                    
+
                     if(m.getArgAsInt(1) < filters[m.getArgAsInt(0)].size()){
                         currentFilter[m.getArgAsInt(0)] = m.getArgAsInt(1);
                     } else {
@@ -587,10 +589,10 @@ void ofApp::update(){
                     vW[n] = syphonClient[n].getWidth();
                     vH[n] = syphonClient[n].getHeight();
                     shaderOn[n] = false;
-#endif
                 }
+#endif
                 //----------------------- get functions ------------------------
-                
+
                 if (m.getAddress() == "/getWidth"){
                     ofxOscMessage s;
                     s.setAddress(m.getAddress());
@@ -609,7 +611,7 @@ void ofApp::update(){
                     s.addIntArg(videoLC[m.getArgAsInt(0)].getTotalNumFrames());
                     sender.sendMessage(s);
                 }
-            } 
+            }
         }
     }
     int c = 0;
@@ -639,10 +641,10 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
+
     ofSetFullscreen(fullScreen);
     ofSetBackgroundColor(backgroundColor);
-    
+
     for(int i = 0; i < LIM; i++){
         if(vIndex[i] == 1 || camON[i] == 1 ||
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -750,17 +752,17 @@ void ofApp::keyPressed(int key){
 
 //--------------------------------------------------------------
 void ofApp::keyReleased(int key){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseMoved(int x, int y ){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    
+
 }
 
 //--------------------------------------------------------------
@@ -770,35 +772,35 @@ void ofApp::mousePressed(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseEntered(int x, int y){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::mouseExited(int x, int y){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::gotMessage(ofMessage msg){
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::exit() {
-    
+
 }
 
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){
-    
+
 }
