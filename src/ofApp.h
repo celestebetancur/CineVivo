@@ -45,7 +45,7 @@ public:
     int portOut;
     
     // CineVivo LiveCoding
-    ofVec2f one[LIM],two[LIM],three[LIM],four[LIM];
+    ofPoint one[LIM],two[LIM],three[LIM],four[LIM];
     ofTexture texVideo[LIM];
     ofPixels pix[LIM];
     
