@@ -453,7 +453,7 @@ void ofApp::update(){
                 if (m.getAddress() == "/posY" && m.getNumArgs() == 2){
                     vY[m.getArgAsInt(0)] = m.getArgAsInt(1);
                 }
-                if (m.getAddress() == "/rot" && m.getNumArgs() == 3){
+                if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
                     vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                     vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
                     vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);

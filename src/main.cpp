@@ -31,7 +31,7 @@ int main( ){
     settings.width = 200;
     settings.height = 200;
     settings.setPosition(ofVec2f(0,0));
-    settings.multiMonitorFullScreen = false;
+    settings.multiMonitorFullScreen = true;
     settings.resizable = true;
     settings.monitor = 1; //multimonitor
     settings.windowMode = OF_WINDOW;
