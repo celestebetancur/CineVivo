@@ -2,33 +2,33 @@
 	<NAME>
 		<WSHAPE> tamVentana </WSHAPE>
         <FSCREEN> claroOscuro </FSCREEN>
-        <CLEAN> un_declive </CLEAN>
+        <CLEAN> elFinalDeTodo </CLEAN>
 		<PLAYALL> todas </PLAYALL>
 		<PAUSEALL> serenas </PAUSEALL>
         <FITAHOR> acoplarActHor </FITAHOR>
         <FITAVER> que_acomulo </FITAVER>
-        <LOAD> es_grato_vivir </LOAD>
-        <FREE> que_desaparecemos </FREE>
+        <LOAD> utiliza </LOAD>
+        <FREE> queDesaparece </FREE>
         <MASK> oculto </MASK>
         <RECTMODE> refCoord </RECTMODE>
-        <POS> posicionar </POS>
+        <POS> doNotMoveFrom </POS>
         <POSX> posEjeX </POSX>
         <POSY> posEjeY </POSY>
         <ROT> rotar </ROT>
         <ROTX> rotEjeX </ROTX>
         <ROTY> rotEjeY </ROTY>
         <ROTZ> rotEjeZ </ROTZ>
-        <SIZE> intenso </SIZE>
+        <SIZE> SOY </SIZE>
         <WIDTH> ancho </WIDTH>
         <HEIGHT> alto </HEIGHT>
-        <SCALE> escalar </SCALE>
+        <SCALE> crece </SCALE>
         <SPEED> velocidad </SPEED>
         <PLAY> reproducir </PLAY>
         <STOP> parar </STOP>
         <PAUSE> pausar </PAUSE>
         <COLOR> color </COLOR>
-        <OPACITY> opacidad </OPACITY>
-        <FIT> la_noche_sobre_todo </FIT>
+        <OPACITY> dejarIr </OPACITY>
+        <FIT> seAcomoda </FIT>
         <FHORIZONTAL> acoplarHor </FHORIZONTAL>
         <FVERTICAL> acoplarVer </FVERTICAL>
         <BCOLOR> colorFondo </BCOLOR>

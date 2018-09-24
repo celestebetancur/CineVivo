@@ -1,8 +1,0 @@
-4 load camera
-4 shader 1
-4 shaderMode 26
-
-5 load camera
-5 opacity 120
-5 shader 1
-5 shaderMode 4

@@ -75,7 +75,7 @@ void ofApp::setup(){
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
         rectMode[i] = 0;
-        maskedIndex[i] = 0;
+        maskedIndex[i] == 0;
         currentFilter[i] = 0;
         filterOn[i] = false;
         shaderLoaded[i] = false;
@@ -963,6 +963,7 @@ void ofApp::draw(){
 
 //--------------------------------------------------------------
 void ofApp::keyPressed(int key){
+    ofLog() << key;
     bool modifier = ofGetKeyPressed(s_superAsModifier ? OF_KEY_SUPER : OF_KEY_CONTROL);
     if(modifier) {
         switch(key) {
@@ -972,13 +973,13 @@ void ofApp::keyPressed(int key){
             case 20: case 't':
                 t_visible = !t_visible;
                 return;
-            case 29: case '+':
+            case 29:
                 if(fontSize < 40){
                     fontSize += 1;
                     font.load("fonts/font.ttf", fontSize, true, true);
                 }
                 return;
-            case 47: case '-':
+            case 47:
                 if(fontSize > 2){
                     fontSize -= 1;
                     font.load("fonts/font.ttf", fontSize, true, true);
