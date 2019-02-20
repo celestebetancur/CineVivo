@@ -54,6 +54,8 @@ void ofApp::setup(){
 
     for(int i = 0; i < LIM; i++){
 
+        cam[i].setup(640,480); //setup camera at start for windows compatibility
+        videoLC[i].load("/videos/fluido.mov"); //init video layers for windows compatibility
         worldCenterX[i] = 0;
         worldCenterY[i] = 0;
         vX[i] = 0;
