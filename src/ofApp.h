@@ -60,9 +60,12 @@ public:
     
     ofVideoGrabber cam[LIM];
     bool camON[LIM];
+    int deviceNUM;
+    int deviceID[LIM];
 
     ofVideoPlayer videoLC[LIM];
-    
+  
+
     int worldCenterX[LIM];
     int worldCenterY[LIM];
     int rectMode[LIM];

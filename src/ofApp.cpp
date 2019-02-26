@@ -53,9 +53,6 @@ void ofApp::setup(){
     backgroundColor = ofColor(0,0,0);
 
     for(int i = 0; i < LIM; i++){
-
-        cam[i].setup(640,480); //setup camera at start for windows compatibility
-        videoLC[i].load("/videos/fluido.mov"); //init video layers for windows compatibility
         worldCenterX[i] = 0;
         worldCenterY[i] = 0;
         vX[i] = 0;
@@ -71,8 +68,10 @@ void ofApp::setup(){
         vRotZ[i] = 0;
         vSpeed[i] = 1;
         camON[i] = false;
+        deviceID[i] = -1;
         one[i].set(0,0);
-        videoLC[i].setPixelFormat(OF_PIXELS_RGBA); 
+        videoLC[i].setPixelFormat(OF_PIXELS_RGBA);
+        videoLC[i].load("/videos/fluido.mov"); //init video layers for windows compatibility
         pix[i].allocate(WIDTH, HEIGHT, OF_PIXELS_RGBA);
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
@@ -103,6 +102,11 @@ void ofApp::setup(){
         syphonDirId[i] = -1;
         syphonON[i] = false;
 #endif
+    }
+    deviceNUM = cam[0].listDevices().size();
+    for(int i = 0; i < deviceNUM; i++){
+        cam[i].setDeviceID(i);
+        cam[i].initGrabber(640,480);
     }
 }
 
@@ -140,6 +144,7 @@ void ofApp::update(){
                 numVideosLoaded = 0;
                 for(int i = 0; i < LIM; i++){
                     cam[i].close();
+                    deviceID[i] = -1;
                     videoLC[i].stop();
                     videoLC[i].close();
                     vIndex[i] = 0;
@@ -205,12 +210,14 @@ void ofApp::update(){
                 if (m.getAddress() == "/load"  &&  (m.getNumArgs() == 2 || m.getNumArgs() == 3)){
                     if (m.getArgAsString(1) == "camera"){
                         int n = m.getArgAsInt(0);
-                        int deviceID = 0;
-                        if(m.getNumArgs() == 3){
-                            deviceID = m.getArgAsInt(2);
+                        int device = m.getArgAsInt(2);
+                        if(m.getNumArgs() == 3 && device < deviceNUM){
+                          camON[n] = true;
+                          deviceID[n] = device;
+                        } else{
+                          camON[n] = true;
+                          deviceID[n] = 0;
                         }
-                        cam[n].setDeviceID(deviceID);
-                        cam[n].setup(640, 480);
                         if(cam[n].isInitialized()){
                             vIndex[n] = 0;
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -376,6 +383,7 @@ void ofApp::update(){
                 if (m.getAddress() == "/free"  &&  m.getNumArgs() == 1){
                     int n = m.getArgAsInt(0);
                     camON[n] = false;
+                    cam[n].close();
                     model3DOn[n] = false;
                     videoLC[n].stop();
                     videoLC[n].close();
@@ -787,12 +795,14 @@ void ofApp::update(){
         }
         if(camON[i]){
             c++;
-            cam[i].update();
-            if( cam[i].isFrameNew() && maskedIndex[i] != 1){
-                pix[i] = cam[i].getPixels();
-                texVideo[i].loadData(pix[i]);
+            if(i < deviceNUM){
+              cam[i].update();
+              }
+            if(cam[i].isFrameNew() && maskedIndex[i] != 1)
+              pix[deviceID[]] = cam[i].getPixels();
+              texVideo[i].loadData(pix[i]);
             }
-            if( cam[i].isFrameNew() && maskedIndex[i] == 1){
+            if(cam[i].isFrameNew() && maskedIndex[i] == 1){
                 pix[i] = cam[i].getPixels();
                 chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],ofColor(0));
             }
