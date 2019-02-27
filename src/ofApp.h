@@ -65,6 +65,7 @@ public:
 
     ofVideoPlayer videoLC[LIM];
   
+    ofSoundPlayer audio[20];
 
     int worldCenterX[LIM];
     int worldCenterY[LIM];
@@ -85,7 +86,8 @@ public:
     float vSpeed [LIM];
     int vW [LIM];
     int vH [LIM];
-    
+    ofLoopType vLoopState[LIM];
+
     //glsl shader
     ofShader shader[LIM];
     bool shaderOn[LIM];

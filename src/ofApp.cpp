@@ -85,6 +85,7 @@ void ofApp::setup(){
         vBlend[i] = false;
         vChroma[i] = false;
         vColorChroma[i] = ofColor(0);
+        vLoopState[i] = OF_LOOP_NORMAL;
         
         fbo[i].allocate(WIDTH, HEIGHT, GL_RGBA);
         fbo[i].begin();
@@ -143,7 +144,6 @@ void ofApp::update(){
             if (m.getAddress() == "/clean"){
                 numVideosLoaded = 0;
                 for(int i = 0; i < LIM; i++){
-                    cam[i].close();
                     deviceID[i] = -1;
                     videoLC[i].stop();
                     videoLC[i].close();
@@ -159,8 +159,8 @@ void ofApp::update(){
                     vRotX[i] = 0;
                     vRotY[i] = 0;
                     vRotZ[i] = 0;
-                    vW[i] = 0;
-                    vH[i] = 0;
+                    vW[i] = ofGetWidth();
+                    vH[i] = ofGetHeight();
                     vSpeed[i] = 1;
                     vOpacity[i] = 255;
                     vColor[i] = ofColor(255);
@@ -208,7 +208,7 @@ void ofApp::update(){
             }
             if(m.getArgAsInt(0) >= 0 &&  m.getArgAsInt(0) < LIM){
                 if (m.getAddress() == "/load"  &&  (m.getNumArgs() == 2 || m.getNumArgs() == 3)){
-                    if (m.getArgAsString(1) == "camera"){
+                   if (m.getArgAsString(1) == XML.getValue("WORDS:NAME:CAMERA","camera")){
                         int n = m.getArgAsInt(0);
                         int device = m.getArgAsInt(2);
                         if(m.getNumArgs() == 3 && device < deviceNUM){
@@ -218,16 +218,15 @@ void ofApp::update(){
                           camON[n] = true;
                           deviceID[n] = 0;
                         }
-                        if(cam[n].isInitialized()){
+                        if(cam[deviceID[n]].isInitialized()){
                             vIndex[n] = 0;
 #if (defined(__APPLE__) && defined(__MACH__))
                             syphonON[n] = false;
 #endif
                             vIndexPlaying[n] = false;
                             model3DOn[n] = false;
-                            vW[n] = cam[n].getWidth();
-                            vH[n] = cam[n].getHeight();
-                            camON[n] = true;
+                            vW[n] = ofGetWidth();
+                            vH[n] = ofGetHeight();
                             four[n].set(ofPoint(0,vH[n]));
                             three[n].set(ofPoint( vW[n] ,vH[n]));
                             two[n].set(ofPoint(vW[n],0));
@@ -253,8 +252,8 @@ void ofApp::update(){
                                 filters[n].push_back(new ZoomBlurFilter());
                                 filters[n].push_back(new EmbossFilter(vW[n], vH[n], 2.f));
                                 filters[n].push_back(new SmoothToonFilter(vW[n], vH[n]));
-                                filters[n].push_back(new TiltShiftFilter(cam[n].getTexture()));
-                                filters[n].push_back(new VoronoiFilter(cam[n].getTexture()));
+                                filters[n].push_back(new TiltShiftFilter(cam[deviceID[n]].getTexture()));
+                                filters[n].push_back(new VoronoiFilter(cam[deviceID[n]].getTexture()));
                                 filters[n].push_back(new CGAColorspaceFilter());
                                 filters[n].push_back(new ErosionFilter(vW[n], vH[n]));
                                 filters[n].push_back(new LookupFilter(vW[n], vH[n], "img/lookup_amatorka.png"));
@@ -264,8 +263,8 @@ void ofApp::update(){
                                 filters[n].push_back(new PosterizeFilter(8));
                                 filters[n].push_back(new LaplacianFilter(vW[n], vH[n], ofVec2f(1, 1)));
                                 filters[n].push_back(new PixelateFilter(vW[n], vH[n]));
-                                filters[n].push_back(new HarrisCornerDetectionFilter(cam[n].getTexture()));
-                                filters[n].push_back(new MotionDetectionFilter(cam[n].getTexture()));
+                                filters[n].push_back(new HarrisCornerDetectionFilter(cam[deviceID[n]].getTexture()));
+                                filters[n].push_back(new MotionDetectionFilter(cam[deviceID[n]].getTexture()));
                                 filters[n].push_back(new LowPassFilter(vW[n], vH[n], 0.9));
                                 
                                 // blending examples
@@ -383,7 +382,6 @@ void ofApp::update(){
                 if (m.getAddress() == "/free"  &&  m.getNumArgs() == 1){
                     int n = m.getArgAsInt(0);
                     camON[n] = false;
-                    cam[n].close();
                     model3DOn[n] = false;
                     videoLC[n].stop();
                     videoLC[n].close();
@@ -393,8 +391,8 @@ void ofApp::update(){
                     vRotX[n] = 0;
                     vRotY[n] = 0;
                     vRotZ[n] = 0;
-                    vW[n] = videoLC[n].getWidth();
-                    vH[n] = videoLC[n].getHeight();
+                    vW[n] = ofGetWidth();
+                    vH[n] = ofGetHeight();
                     vSpeed[n] = 1;
                     vOpacity[n] = 255;
                     vColor[n] = ofColor(255,255,255);
@@ -411,6 +409,19 @@ void ofApp::update(){
                     fbo[n].end();
                     shaderOn[n] = false;
                     vFeedback[n] = false;
+                }
+                if (m.getAddress() == "/loadAudio"  &&  m.getNumArgs() == 2){
+                  int n = m.getArgAsInt(0);
+                  if(vExt == false){
+                    audio[n].load("audio/"+m.getArgAsString(1)+".mp3");
+                    audio[n].play();
+                  } else {
+                    audio[n].load("audio/"+m.getArgAsString(1));
+                    audio[n].play();
+                  }
+                }
+                if (m.getAddress() == "/volumeAudio"  &&  m.getNumArgs() == 2){
+                    audio[m.getArgAsInt(0)].setVolume(m.getArgAsFloat(1));
                 }
                 if (m.getAddress() == "/load3D"  &&  m.getNumArgs() == 2){
                     int n = m.getArgAsInt(0);
@@ -440,14 +451,18 @@ void ofApp::update(){
                 if (m.getAddress() == "/mask"  &&  m.getNumArgs() == 2){
                     maskedIndex[m.getArgAsInt(0)] = 1;
                     if(vExt == true){
+                      if(ofFile::doesFileExist("mask/"+m.getArgAsString(1)+".png")){
                         mask[i].load("mask/"+m.getArgAsString(1));
+                        vChroma[i] = true;
+                      }
                     }
                     if(vExt == false){
-                        mask[i].load("mask/"+m.getArgAsString(1)+".png");
-                    }
-                    if(mask[i].isUsingTexture()){
+                      if(ofFile::doesFileExist("mask/"+m.getArgAsString(1)+".png")){
+                        if(mask[i].load("mask/"+m.getArgAsString(1)+".png")){
                         vChroma[i] = true;
+                      }
                     }
+                  }
                 }
                 if (m.getAddress() == "/rectMode" && m.getNumArgs() == 2){
                     rectMode[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -492,6 +507,17 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/speed" && m.getNumArgs() == 2){
                     vSpeed[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                }
+                if (m.getAddress() == "/loopState" && m.getNumArgs() == 2){
+                  int s = m.getArgAsFloat(1);
+                    if(s == 0){
+                      vLoopState[m.getArgAsInt(0)] = OF_LOOP_NONE;
+                      videoLC[m.getArgAsInt(0)].setLoopState(OF_LOOP_NONE);
+                    }
+                    if(s == 1){
+                      vLoopState[m.getArgAsInt(0)]  = OF_LOOP_NORMAL;
+                      videoLC[m.getArgAsInt(0)].setLoopState(OF_LOOP_NORMAL);
+                    }
                 }
                 if (m.getAddress() == "/play" && m.getNumArgs() == 1){
                     vIndexPlaying[m.getArgAsInt(0)] = 1;
@@ -772,19 +798,23 @@ void ofApp::update(){
             }
         }
     }
-    
+// Update Audio-----------------------------------------------------
+
+    ofSoundUpdate();
+
 // Update Graphic Things --------------------------------------------
-    
+
     int c = 0;
     for(int i = 0; i < LIM; i++){
         if(vIndexPlaying[i]){
             c++;
+            //videoLC[i].setLoopState(vLoopState[i]);
             videoLC[i].update();
             if(videoLC[i].isFrameNew() && !vChroma[i]){
                 pix[i] = videoLC[i].getPixels();
                 texVideo[i].loadData(pix[i]);
             }
-            if(videoLC[i].isFrameNew() && vChroma[i]){
+            else if(videoLC[i].isFrameNew() && vChroma[i]){
                 pix[i] = videoLC[i].getPixels();
                 chroma(&pix[i],&texVideo[i],vColorChroma[i]);
             }
@@ -793,18 +823,20 @@ void ofApp::update(){
                 chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],vColorChroma[i]);
             }
         }
+        if(i < deviceNUM){
+          cam[i].update();
+        }
         if(camON[i]){
             c++;
-            if(i < deviceNUM){
-              cam[i].update();
-              }
-            if(cam[i].isFrameNew() && maskedIndex[i] != 1)
-              pix[deviceID[]] = cam[i].getPixels();
+            if( maskedIndex[i] != 1){
+              pix[i] = cam[deviceID[i]].getPixels();
               texVideo[i].loadData(pix[i]);
             }
-            if(cam[i].isFrameNew() && maskedIndex[i] == 1){
-                pix[i] = cam[i].getPixels();
-                chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],ofColor(0));
+            else if(maskedIndex[i] == 1){
+                pix[i] = cam[deviceID[i]].getPixels();
+                if(mask[i].isUsingTexture()){
+                  chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],ofColor(0));
+                }
             }
         }
         if(model3DOn[i]){
@@ -1090,6 +1122,7 @@ void ofApp::chroma(ofPixels *src, ofTexture *texture, ofColor colorChroma){
 }
 //--------------------------------------------------------------
 void ofApp::chromaMask(ofPixels *src1, ofPixels *src2, ofTexture *texture, ofColor colorChroma){
+
     ofPixels pix;
     int w = src1->getWidth();
     int h = src1->getHeight();
@@ -1142,16 +1175,16 @@ void ofApp::executeScriptEvent(string getText) {
                     texto.push_back(textClean[i]);
                 }
             }
-            if(texto[0] == "fontSize" && texto.size() == 2){
+            if(texto[0] == XML.getValue("WORDS:NAME:FSIZE","fontSize") && texto.size() == 2){
                 fontSize = ofToInt(texto[1]);
                 font.load("fonts/font.ttf", fontSize, true, true);
                 ofLogNotice() << "CineVivo[editor]: Font Size: " + texto[1];
             }
-            if(texto[0] == "fontColor" && texto.size() == 4){
+            if(texto[0] == XML.getValue("WORDS:NAME:FCOLOR","fontColor") && texto.size() == 4){
                 fontColor = ofColor(ofToInt(texto[1]),ofToInt(texto[2]),ofToInt(texto[3]));
                 ofLogNotice() << "CineVivo[editor]: Font Color: " + texto[1] + " " + texto[2] + " " + texto[3];
             }
-            if(texto[0] == "fileExtension" && texto.size() == 2){
+            if(texto[0] == XML.getValue("WORDS:NAME:FILEEXT","fileExtension") && texto.size() == 2){
                 if (ofToInt(texto[1]) == 0 || ofToInt(texto[1]) == 1){
                     string temp = "/fileExtension " + texto[1];
                     ofLogNotice() << "CineVivo[setup]: File extension: " + texto[1];
@@ -1281,12 +1314,28 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD3D","load3D") && texto.size() == 3){
-                    string temp = "/load3D " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/load3D");
-                    s.addIntArg(numV);
-                    s.addStringArg(texto[2]);
-                    osc.sendMessage(s);
+                  string temp = "/load3D " + ofToString(numV) + " " + texto[2];
+                  ofLogNotice() << "CineVivo[send]: " << temp;
+                  s.setAddress("/load3D");
+                  s.addIntArg(numV);
+                  s.addStringArg(texto[2]);
+                  osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:LOADAUDIO","loadAudio") && texto.size() == 3){
+                  string temp = "/loadAudio " + ofToString(numV) + " " + texto[2];
+                  ofLogNotice() << "CineVivo[send]: " << temp;
+                  s.setAddress("/loadAudio");
+                  s.addIntArg(numV);
+                  s.addStringArg(texto[2]);
+                  osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:VOLUMEAUDIO","volumeAudio") && texto.size() == 3){
+                  string temp = "/volumeAudio " + ofToString(numV) + " " + texto[2];
+                  ofLogNotice() << "CineVivo[send]: " << temp;
+                  s.setAddress("/volumeAudio");
+                  s.addIntArg(numV);
+                  s.addFloatArg(ofToFloat(texto[2]));
+                  osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FREE","free") && texto.size() == 2){
                     string temp = "/free " + ofToString(numV);
@@ -1422,11 +1471,19 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:PLAY","play") && texto.size() == 2){
-                    string temp = "/play " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/play");
-                    s.addIntArg(numV);
-                    osc.sendMessage(s);
+                  string temp = "/play " + ofToString(numV);
+                  ofLogNotice() << "CineVivo[send]: " << temp;
+                  s.setAddress("/play");
+                  s.addIntArg(numV);
+                  osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:LOOPSTATE","loopState") && texto.size() == 3){
+                  string temp = "/loopState " + ofToString(numV) + " " + texto[2];
+                  ofLogNotice() << "CineVivo[send]: " << temp;
+                  s.setAddress("/loopState");
+                  s.addIntArg(numV);
+                  s.addIntArg(ofToInt(texto[2]));
+                  osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:STOP","stop") && texto.size() == 2){
                     string temp = "/stop " + ofToString(numV);
