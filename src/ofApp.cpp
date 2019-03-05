@@ -75,6 +75,7 @@ void ofApp::setup(){
         pix[i].allocate(WIDTH, HEIGHT, OF_PIXELS_RGBA);
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
+        pictures[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
         rectMode[i] = 0;
         maskedIndex[i] = 0;
         currentFilter[i] = 0;
@@ -86,6 +87,7 @@ void ofApp::setup(){
         vChroma[i] = false;
         vColorChroma[i] = ofColor(0);
         vLoopState[i] = OF_LOOP_NORMAL;
+        imageON[i]  = false;
         
         fbo[i].allocate(WIDTH, HEIGHT, GL_RGBA);
         fbo[i].begin();
@@ -180,6 +182,8 @@ void ofApp::update(){
                     ofClear(0, 0, 0, 0);
                     fbo[i].end();
                     vFeedback[i] = false;
+                    imageON[i] = false;
+                    pictures[i].clear();
                 }
             }
             if (m.getAddress() == "/playAll"){
@@ -409,6 +413,8 @@ void ofApp::update(){
                     fbo[n].end();
                     shaderOn[n] = false;
                     vFeedback[n] = false;
+                    imageON[n] = false;
+                    pictures[n].clear();
                 }
                 if (m.getAddress() == "/loadAudio"  &&  m.getNumArgs() == 2){
                   int n = m.getArgAsInt(0);
@@ -463,6 +469,30 @@ void ofApp::update(){
                       }
                     }
                   }
+                }
+                if (m.getAddress() == "/image"  &&  m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    string temp = "images/"+m.getArgAsString(1);
+                    bool exist = ofFile::doesFileExist("images/"+m.getArgAsString(1)+".jpg");
+                    if(vExt == true){
+                        if(exist){
+                            pictures[n].load(temp);
+                            ofLog() << "imagen";
+                        }
+                    }
+                    if(vExt == false){
+                        if(exist){
+                            pictures[n].load(temp+".jpg");
+                        }
+                    }
+                    if(exist){
+                        imageON[n] = true;
+                        vW[n] = pictures[n].getWidth();
+                        vH[n] = pictures[n].getHeight();
+                        four[n].set(ofPoint(0,vH[n]));
+                        three[n].set(ofPoint( vW[n] ,vH[n]));
+                        two[n].set(ofPoint(vW[n],0));
+                    }
                 }
                 if (m.getAddress() == "/rectMode" && m.getNumArgs() == 2){
                     rectMode[m.getArgAsInt(0)] = m.getArgAsInt(1);
@@ -544,7 +574,7 @@ void ofApp::update(){
                     int n = m.getArgAsInt(0);
 #if (defined(__APPLE__) && defined(__MACH__))
                     if(syphonON[m.getArgAsInt(0)] == 1)
-                        ofLogNotice() << "CineVivo[notice]: Shaders can not be applied to syphon inputs";
+                        ofLogNotice() << "CineVivo[notice]: CV Filters can not be applied to syphon inputs";
                     else{
 #endif
                         if(m.getArgAsInt(1) == 1)
@@ -649,14 +679,9 @@ void ofApp::update(){
                         ofLogNotice() << "CineVivo[notice]: Shaders can not be applied to syphon inputs";
                     else{
 #endif
-                        if(m.getArgAsInt(1) == 1){
-                            string shaderName = "Shaders/shader" + ofToString(m.getArgAsInt(0));
-                            shaderOn[m.getArgAsInt(0)] = true;
-                            shader[m.getArgAsInt(0)].load(shaderName);
-                            //gui->editor.openFile(shaderName+".frag",gui->editor.getCurrentEditor());
-                        }
-                        if(m.getArgAsInt(1) == 0)
-                            shaderOn[m.getArgAsInt(0)] = false;
+                        string shaderName = "shaders/" + m.getArgAsString(1);
+                        shaderOn[m.getArgAsInt(0)] = true;
+                        shader[m.getArgAsInt(0)].load(shaderName);
 #if (defined(__APPLE__) && defined(__MACH__))
                     }
 #endif
@@ -681,15 +706,15 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/blend" && m.getNumArgs() == 3){
                     if((videoLC[m.getArgAsInt(1)].isLoaded() && videoLC[m.getArgAsInt(2)].isLoaded()) ||
-                        (videoLC[m.getArgAsInt(1)].isLoaded() && cam[m.getArgAsInt(2)].isUsingTexture()) ||
-                         (cam[m.getArgAsInt(1)].isUsingTexture() && videoLC[m.getArgAsInt(2)].isLoaded()) ||
-                         (cam[m.getArgAsInt(1)].isUsingTexture() && cam[m.getArgAsInt(2)].isUsingTexture())){
+                        (videoLC[m.getArgAsInt(1)].isLoaded() && cam[deviceID[m.getArgAsInt(2)]].isUsingTexture()) ||
+                         (cam[deviceID[m.getArgAsInt(1)]].isUsingTexture() && videoLC[m.getArgAsInt(2)].isLoaded()) ||
+                         (cam[deviceID[m.getArgAsInt(1)]].isUsingTexture() && cam[deviceID[m.getArgAsInt(2)]].isUsingTexture())){
                         
                         int n = m.getArgAsInt(0);
                         vBlend[n] = true;
                         if(camON[m.getArgAsInt(1)]){
-                            vW[n] = cam[m.getArgAsInt(1)].getWidth();
-                            vH[n] = cam[m.getArgAsInt(1)].getHeight();
+                            vW[n] = cam[deviceID[m.getArgAsInt(1)]].getWidth();
+                            vH[n] = cam[deviceID[m.getArgAsInt(1)]].getHeight();
                         } else {
                             vW[n] = videoLC[m.getArgAsInt(1)].getWidth();
                             vH[n] = videoLC[m.getArgAsInt(1)].getHeight();
@@ -849,17 +874,17 @@ void ofApp::update(){
             blend(&pix[vToBlend[i][0]], &pix[vToBlend[i][1]], &texVideo[i]);
         }
         if(camON[vToBlend[i][0]] && camON[vToBlend[i][1]] && vBlend[i]){
-            pix[vToBlend[i][0]] = cam[vToBlend[i][0]].getPixels();
-            pix[vToBlend[i][1]] = cam[vToBlend[i][1]].getPixels();
+            pix[vToBlend[i][0]] = cam[deviceID[vToBlend[i][0]]].getPixels();
+            pix[vToBlend[i][1]] = cam[deviceID[vToBlend[i][1]]].getPixels();
             blend(&pix[vToBlend[i][0]], &pix[vToBlend[i][1]], &texVideo[i]);
         }
         if(vIndexPlaying[vToBlend[i][0]] && camON[vToBlend[i][1]] && vBlend[i]){
             pix[vToBlend[i][0]] = videoLC[vToBlend[i][0]].getPixels();
-            pix[vToBlend[i][1]] = cam[vToBlend[i][1]].getPixels();
+            pix[vToBlend[i][1]] = cam[deviceID[vToBlend[i][1]]].getPixels();
             blend(&pix[vToBlend[i][0]], &pix[vToBlend[i][1]], &texVideo[i]);
         }
         if(camON[vToBlend[i][0]] && vIndexPlaying[vToBlend[i][1]] && vBlend[i]){
-            pix[vToBlend[i][0]] = cam[vToBlend[i][0]].getPixels();
+            pix[vToBlend[i][0]] = cam[deviceID[vToBlend[i][0]]].getPixels();
             pix[vToBlend[i][1]] = videoLC[vToBlend[i][1]].getPixels();
             blend(&pix[vToBlend[i][0]], &pix[vToBlend[i][1]], &texVideo[i]);
         }
@@ -879,7 +904,7 @@ void ofApp::draw(){
     //ofSetRectMode(OF_RECTMODE_CENTER);
     
     for(int i = 0; i < LIM; i++){
-        if(vIndex[i] == 1 || camON[i] ||
+        if(vIndex[i] == 1 || camON[i] || imageON[i] ||
 #if (defined(__APPLE__) && defined(__MACH__))
            syphonON[i] ||
 #endif
@@ -964,6 +989,9 @@ void ofApp::draw(){
                 ofDisableBlendMode();
                 ofDisableSeparateSpecularLight();
             }
+            if(imageON[i] == true){
+                pictures[i].getTexture().draw(one[i], two[i], three[i], four[i]);
+            }
             if(filterOn[i] == true && model3DOn[i] == false){
                 filters[i][currentFilter[i]]->end();
                 ofPopMatrix();
@@ -978,6 +1006,7 @@ void ofApp::draw(){
                     shader[i].begin();
                     shader[i].setUniform1f("iGlobalTime", ofGetElapsedTimef());
                     shader[i].setUniform3f("iResolution",WIDTH,HEIGHT, 1);
+                    shader[i].setUniformTexture("iChannel0", texVideo[i], 2);
                 }
                 
                 ofSetColor(255, 255, 255);
@@ -1203,7 +1232,7 @@ void ofApp::executeScriptEvent(string getText) {
                 XML.load ("xml/languageES.xml");
                 ofLogNotice() << "CineVivo[setup]: Sintaxis en Español cargada";
             }
-            if(texto[0] == "custom" && texto.size() == 1){
+            if(texto[0] == XML.getValue("WORDS:NAME:CUSTOM","custom") && texto.size() == 1){
                 XML.load ("xml/languageCustom.xml");
                 ofLogNotice() << "CineVivo[setup]: Custom syntax loaded";
             }
@@ -1348,6 +1377,14 @@ void ofApp::executeScriptEvent(string getText) {
                     string temp = "/mask " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/mask");
+                    s.addIntArg(numV);
+                    s.addStringArg(texto[2]);
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:IMAGE","image") && texto.size() == 3){
+                    string temp = "/image " + ofToString(numV) + " " + texto[2];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    s.setAddress("/image");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
@@ -1527,7 +1564,7 @@ void ofApp::executeScriptEvent(string getText) {
                     ofLogNotice() << "CineVivo[send]: " << temp;
                     s.setAddress("/shader");
                     s.addIntArg(numV);
-                    s.addIntArg(ofToInt(texto[2]));
+                    s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:BLUR","blur") && texto.size() == 3){

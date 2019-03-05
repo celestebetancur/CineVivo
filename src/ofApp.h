@@ -64,7 +64,7 @@ public:
     int deviceID[LIM];
 
     ofVideoPlayer videoLC[LIM];
-  
+    ofImage pictures[LIM];
     ofSoundPlayer audio[20];
 
     int worldCenterX[LIM];
@@ -86,6 +86,7 @@ public:
     float vSpeed [LIM];
     int vW [LIM];
     int vH [LIM];
+    bool imageON[LIM];
     ofLoopType vLoopState[LIM];
 
     //glsl shader

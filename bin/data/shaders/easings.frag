@@ -8,6 +8,24 @@ float linear(float t) {
     return t;
 }
 
+float rand(float x, float y){
+    return fract(sin(dot(vec2(x, y) ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float sawtooth(float t) {
+    return t - floor(t);
+}
+
+mat2 rotate(float a) {
+    float c = cos(a),
+    s = sin(a);
+    return mat2(c, -s, s, c);
+}
+
+vec2 pol2cart(float r, float t) {
+    return vec2(r * cos(t), r * sin(t));
+}
+
 float exponentialIn(float t) {
     return t == 0.0 ? t : pow(2.0, 10.0 * (t - 1.0));
 }
