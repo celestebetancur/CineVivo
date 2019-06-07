@@ -2,23 +2,23 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-    
+
     ofSetEscapeQuitsApp(false);
     ofSetWindowShape(640, 480);
     ofSetWindowTitle("CineVivo");
     ofSetVerticalSync(true);
 
     XML.load ("xml/OSCConf.xml");
-    
+
     //----------------------OSC setup -------------------------
-    
+
     portOut = XML.getValue("PORT:NAME:OUT",5613);
     sender.setup("127.0.0.1",portOut);
     //OSC in
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
     osc.setup("127.0.0.1",5612);
-    
+
     //--------------------filters setup -----------------------
 
     ambientLight = 155;
@@ -47,7 +47,7 @@ void ofApp::setup(){
     digit[7] = xmlVariables.getValue("VAR:NAME:SIETE","7");
     digit[8] = xmlVariables.getValue("VAR:NAME:OCHO","8");
     digit[9] = xmlVariables.getValue("VAR:NAME:NUEVE","9");
-    
+
     backgroundAuto = true;
     numVideosLoaded = 0;
     backgroundColor = ofColor(0,0,0);
@@ -88,34 +88,34 @@ void ofApp::setup(){
         vColorChroma[i] = ofColor(0);
         vLoopState[i] = OF_LOOP_NORMAL;
         imageON[i]  = false;
-        
+
         fbo[i].allocate(WIDTH, HEIGHT, GL_RGBA);
         fbo[i].begin();
             ofClear(0, 0, 0, 0);
         fbo[i].end();
         shaderOn[i] = false;
-        
+
         vFeedback[i] = false;
-        
+
 #if (defined(__APPLE__) && defined(__MACH__))
         //-------------------Syphon--------------------------------
-        
+
         syphonDir.setup();
         syphonClient[i].setup();
         syphonDirId[i] = -1;
         syphonON[i] = false;
 #endif
     }
-    deviceNUM = cam[0].listDevices().size();
+    /*deviceNUM = cam[0].listDevices().size();
     for(int i = 0; i < deviceNUM; i++){
         cam[i].setDeviceID(i);
         cam[i].initGrabber(640,480);
-    }
+    }*/
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    
+
     while (reciever.hasWaitingMessages()){
 
         ofxOscMessage m;
@@ -236,14 +236,14 @@ void ofApp::update(){
                             two[n].set(ofPoint(vW[n],0));
 
                             if(shaderLoaded[n] == false){
-                                
+
                                 FilterChain * charcoal = new FilterChain(vW[n], vH[n], "Charcoal");
                                 charcoal->addFilter(new GaussianBlurFilter(vW[n], vH[n], 2.f ));
                                 charcoal->addFilter(new DoGFilter(vW[n], vH[n], 12, 1.2, 8, 0.99, 4));
                                 filters[n].push_back(charcoal);
-                                
+
                                 // Basic filter examples
-                                
+
                                 filters[n].push_back(new HalftoneFilter(vW[n], vH[n], 0.01));
                                 filters[n].push_back(new CrosshatchFilter(vW[n], vH[n]));
                                 filters[n].push_back(new KuwaharaFilter(6));
@@ -270,43 +270,43 @@ void ofApp::update(){
                                 filters[n].push_back(new HarrisCornerDetectionFilter(cam[deviceID[n]].getTexture()));
                                 filters[n].push_back(new MotionDetectionFilter(cam[deviceID[n]].getTexture()));
                                 filters[n].push_back(new LowPassFilter(vW[n], vH[n], 0.9));
-                                
+
                                 // blending examples
-                                
+
                                 ofImage wes = ofImage("img/wes.jpg");
                                 ChromaKeyBlendFilter * chroma = new ChromaKeyBlendFilter(ofVec3f(0.f, 1.f, 0.f), 0.4);
                                 chroma->setSecondTexture(wes.getTexture());
                                 filters[n].push_back(chroma);
-                                
+
                                 filters[n].push_back(new DisplacementFilter("img/mandel.jpg", vW[n], vH[n], 25.f));
                                 filters[n].push_back(new PoissonBlendFilter(wes.getTexture(), vW[n],vH[n], 2.0));
                                 filters[n].push_back(new DisplacementFilter("img/glass/3.jpg", vW[n], vH[n], 40.0));
                                 filters[n].push_back(new ExclusionBlendFilter(wes.getTexture()));
-                                
+
                                 // Convolution filters
-                                
+
                                 Abstract3x3ConvolutionFilter * convolutionFilter1 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                                 convolutionFilter1->setMatrix(-1, 0, 1, -2, 0, 2, -1, 0, 1);
                                 filters[n].push_back(convolutionFilter1);
-                                
+
                                 Abstract3x3ConvolutionFilter * convolutionFilter2 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                                 convolutionFilter2->setMatrix(4, 4, 4, 4, -32, 4, 4,  4, 4);
                                 filters[n].push_back(convolutionFilter2);
-                                
+
                                 Abstract3x3ConvolutionFilter * convolutionFilter3 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                                 convolutionFilter3->setMatrix(1.2,  1.2, 1.2, 1.2, -9.0, 1.2, 1.2,  1.2, 1.2);
                                 filters[n].push_back(convolutionFilter3);
-                                
+
                                 //  daisy-chain a bunch of filters
-                                
+
                                 FilterChain * foggyTexturedGlassChain = new FilterChain(vW[n], vH[n], "Weird Glass");
                                 foggyTexturedGlassChain->addFilter(new PerlinPixellationFilter(vW[n], vH[n], 13.f));
                                 foggyTexturedGlassChain->addFilter(new EmbossFilter(vW[n], vH[n], 0.5));
                                 foggyTexturedGlassChain->addFilter(new GaussianBlurFilter(vW[n], vH[n], 3.f));
                                 filters[n].push_back(foggyTexturedGlassChain);
-                                
+
                                 // unimaginative filter chain
-                                
+
                                 FilterChain * watercolorChain = new FilterChain(vW[n], vH[n], "Monet");
                                 watercolorChain->addFilter(new KuwaharaFilter(9));
                                 watercolorChain->addFilter(new LookupFilter(vW[n], vH[n], "img/lookup_miss_etikate.png"));
@@ -314,14 +314,14 @@ void ofApp::update(){
                                 watercolorChain->addFilter(new PoissonBlendFilter("img/canvas_texture.jpg",vW[n], vH[n], 2.0));
                                 watercolorChain->addFilter(new VignetteFilter());
                                 filters[n].push_back(watercolorChain);
-                                
+
                                 //  random gradient map for posterity
-                                
+
                                 vector<GradientMapColorPoint> colors;
                                 for (float percent=0.0; percent<=1.0; percent+= 0.1)
                                     colors.push_back( GradientMapColorPoint(ofRandomuf(),ofRandomuf(),ofRandomuf(),percent) );
                                 filters[n].push_back(new GradientMapFilter(colors));
-                                
+
                                 shaderLoaded[n] = true;
                             }
                         }
@@ -589,9 +589,9 @@ void ofApp::update(){
                         charcoal->addFilter(new GaussianBlurFilter(vW[n], vH[n], 2.f ));
                         charcoal->addFilter(new DoGFilter(vW[n], vH[n], 12, 1.2, 8, 0.99, 4));
                         filters[n].push_back(charcoal);
-                        
+
                         // Basic filter examples
-                        
+
                         filters[n].push_back(new HalftoneFilter(vW[n], vH[n], 0.01));
                         filters[n].push_back(new CrosshatchFilter(vW[n], vH[n]));
                         filters[n].push_back(new KuwaharaFilter(6));
@@ -618,43 +618,43 @@ void ofApp::update(){
                         filters[n].push_back(new HarrisCornerDetectionFilter(videoLC[n].getTexture()));
                         filters[n].push_back(new MotionDetectionFilter(videoLC[n].getTexture()));
                         filters[n].push_back(new LowPassFilter(vW[n], vH[n], 0.9));
-                        
+
                         // blending examples
-                        
+
                         ofImage wes = ofImage("img/wes.jpg");
                         ChromaKeyBlendFilter * chroma = new ChromaKeyBlendFilter(ofVec3f(0.f, 1.f, 0.f), 0.4);
                         chroma->setSecondTexture(wes.getTexture());
                         filters[n].push_back(chroma);
-                        
+
                         filters[n].push_back(new DisplacementFilter("img/mandel.jpg", vW[n], vH[n], 25.f));
                         filters[n].push_back(new PoissonBlendFilter(wes.getTexture(), vW[n],vH[n], 2.0));
                         filters[n].push_back(new DisplacementFilter("img/glass/3.jpg", vW[n], vH[n], 40.0));
                         filters[n].push_back(new ExclusionBlendFilter(wes.getTexture()));
-                        
+
                         // Convolution filters
-                        
+
                         Abstract3x3ConvolutionFilter * convolutionFilter1 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                         convolutionFilter1->setMatrix(-1, 0, 1, -2, 0, 2, -1, 0, 1);
                         filters[n].push_back(convolutionFilter1);
-                        
+
                         Abstract3x3ConvolutionFilter * convolutionFilter2 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                         convolutionFilter2->setMatrix(4, 4, 4, 4, -32, 4, 4,  4, 4);
                         filters[n].push_back(convolutionFilter2);
-                        
+
                         Abstract3x3ConvolutionFilter * convolutionFilter3 = new Abstract3x3ConvolutionFilter(vW[n], vH[n]);
                         convolutionFilter3->setMatrix(1.2,  1.2, 1.2, 1.2, -9.0, 1.2, 1.2,  1.2, 1.2);
                         filters[n].push_back(convolutionFilter3);
-                        
+
                         //  daisy-chain a bunch of filters
-                        
+
                         FilterChain * foggyTexturedGlassChain = new FilterChain(vW[n], vH[n], "Weird Glass");
                         foggyTexturedGlassChain->addFilter(new PerlinPixellationFilter(vW[n], vH[n], 13.f));
                         foggyTexturedGlassChain->addFilter(new EmbossFilter(vW[n], vH[n], 0.5));
                         foggyTexturedGlassChain->addFilter(new GaussianBlurFilter(vW[n], vH[n], 3.f));
                         filters[n].push_back(foggyTexturedGlassChain);
-                        
+
                         // unimaginative filter chain
-                        
+
                         FilterChain * watercolorChain = new FilterChain(vW[n], vH[n], "Monet");
                         watercolorChain->addFilter(new KuwaharaFilter(9));
                         watercolorChain->addFilter(new LookupFilter(vW[n], vH[n], "img/lookup_miss_etikate.png"));
@@ -662,14 +662,14 @@ void ofApp::update(){
                         watercolorChain->addFilter(new PoissonBlendFilter("img/canvas_texture.jpg",vW[n], vH[n], 2.0));
                         watercolorChain->addFilter(new VignetteFilter());
                         filters[n].push_back(watercolorChain);
-                        
+
                         //  random gradient map for posterity
-                        
+
                         vector<GradientMapColorPoint> colors;
                         for (float percent=0.0; percent<=1.0; percent+= 0.1)
                             colors.push_back( GradientMapColorPoint(ofRandomuf(),ofRandomuf(),ofRandomuf(),percent) );
                         filters[n].push_back(new GradientMapFilter(colors));
-                        
+
                         shaderLoaded[n] = true;
                     }
                 }
@@ -709,7 +709,7 @@ void ofApp::update(){
                         (videoLC[m.getArgAsInt(1)].isLoaded() && cam[deviceID[m.getArgAsInt(2)]].isUsingTexture()) ||
                          (cam[deviceID[m.getArgAsInt(1)]].isUsingTexture() && videoLC[m.getArgAsInt(2)].isLoaded()) ||
                          (cam[deviceID[m.getArgAsInt(1)]].isUsingTexture() && cam[deviceID[m.getArgAsInt(2)]].isUsingTexture())){
-                        
+
                         int n = m.getArgAsInt(0);
                         vBlend[n] = true;
                         if(camON[m.getArgAsInt(1)]){
@@ -902,7 +902,7 @@ void ofApp::draw(){
     ofSetBackgroundColor(backgroundColor);
     ofSetBackgroundAuto(backgroundAuto);
     //ofSetRectMode(OF_RECTMODE_CENTER);
-    
+
     for(int i = 0; i < LIM; i++){
         if(vIndex[i] == 1 || camON[i] || imageON[i] ||
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -912,7 +912,7 @@ void ofApp::draw(){
             ofPushMatrix();
             ofTranslate(worldCenterX[i],worldCenterY[i]);
             ofPushMatrix();
-    
+
             ofRotateXDeg(vRotX[i]);
             ofRotateYDeg(vRotY[i]);
             ofRotateZDeg(vRotZ[i]);
@@ -1008,7 +1008,7 @@ void ofApp::draw(){
                     shader[i].setUniform3f("iResolution",WIDTH,HEIGHT, 1);
                     shader[i].setUniformTexture("iChannel0", texVideo[i], 2);
                 }
-                
+
                 ofSetColor(255, 255, 255);
                 ofDrawRectangle(0, 0, WIDTH, HEIGHT);
                 if(shader[i].isLoaded()){
@@ -1170,7 +1170,7 @@ void ofApp::chromaMask(ofPixels *src1, ofPixels *src2, ofTexture *texture, ofCol
 }
 //--------------------------------------------------------------
 void ofApp::blend(ofPixels *src1, ofPixels *src2, ofTexture *texture){
-    
+
     int w = src1->getWidth();
     int h = src1->getHeight();
     src2->resize(w,h,OF_INTERPOLATE_NEAREST_NEIGHBOR);
@@ -1190,11 +1190,11 @@ void ofApp::blend(ofPixels *src1, ofPixels *src2, ofTexture *texture){
 //-----------------------------------------------------------
 void ofApp::executeScriptEvent(string getText) {
     // received on editor CTRL/Super + e
-    
+
     std::vector<string> textClean;
     string txt = getText;
     lineas = ofSplitString(txt, "\n");
-    
+
     for(int i = 0; i < lineas.size();i++){
         ofxOscMessage s;
         if(lineas[i].size() != 0){
@@ -1225,7 +1225,7 @@ void ofApp::executeScriptEvent(string getText) {
                 }
             }
             if(texto[0] == "english" && texto.size() == 1){
-                
+
                 ofLogNotice() << "CineVivo[setup]: English syntax loaded";
             }
             if(texto[0] == "espanol" && texto.size() == 1){
@@ -1316,14 +1316,14 @@ void ofApp::executeScriptEvent(string getText) {
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
-            
+
             int numV = -1;
             for(int i = 0; i < 10; i++){
                 if(ofIsStringInString(digit[i], texto[0])){
                     numV = i;
                 }
             }
-            
+
             if(numV > -1 && numV < 10){
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD","load") && texto.size() == 3){
                     string temp = "/load " + ofToString(numV) + " " + texto[2];

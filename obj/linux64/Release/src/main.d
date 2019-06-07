@@ -407,6 +407,7 @@ obj/linux64/Release/src/main.o: \
  /usr/include/glib-2.0/gobject/gtypeplugin.h \
  /usr/include/glib-2.0/gobject/gvaluearray.h \
  /usr/include/glib-2.0/gobject/gvaluetypes.h \
+ /usr/include/glib-2.0/gobject/glib-enumtypes.h \
  /usr/include/glib-2.0/gobject/gobject-autocleanups.h \
  /usr/include/gstreamer-1.0/gst/gstconfig.h \
  /usr/include/gstreamer-1.0/gst/gstversion.h \
@@ -497,9 +498,11 @@ obj/linux64/Release/src/main.o: \
  /usr/include/gstreamer-1.0/gst/video/video-multiview.h \
  /usr/include/gstreamer-1.0/gst/video/colorbalancechannel.h \
  /usr/include/gstreamer-1.0/gst/video/colorbalance.h \
+ /usr/include/gstreamer-1.0/gst/video/gstvideoaggregator.h \
+ /usr/include/gstreamer-1.0/gst/base/gstaggregator.h \
+ /usr/include/gstreamer-1.0/gst/base/base-prelude.h \
  /usr/include/gstreamer-1.0/gst/video/gstvideodecoder.h \
  /usr/include/gstreamer-1.0/gst/base/gstadapter.h \
- /usr/include/gstreamer-1.0/gst/base/base-prelude.h \
  /usr/include/gstreamer-1.0/gst/video/gstvideoutils.h \
  /usr/include/gstreamer-1.0/gst/video/gstvideoencoder.h \
  /usr/include/gstreamer-1.0/gst/video/gstvideofilter.h \
@@ -517,6 +520,7 @@ obj/linux64/Release/src/main.o: \
  /usr/include/gstreamer-1.0/gst/video/video-overlay-composition.h \
  /usr/include/gstreamer-1.0/gst/video/videooverlay.h \
  /usr/include/gstreamer-1.0/gst/video/gstvideoaffinetransformationmeta.h \
+ /usr/include/gstreamer-1.0/gst/video/video-anc.h \
  /home/parqueexplora/OF/openFrameworks/libs/openFrameworks/video/ofVideoPlayer.h \
  /home/parqueexplora/OF/openFrameworks/libs/openFrameworks/video/ofGstVideoPlayer.h \
  /home/parqueexplora/OF/openFrameworks/libs/openFrameworks/3d/of3dUtils.h \
@@ -1479,6 +1483,8 @@ obj/linux64/Release/src/main.o: \
 
 /usr/include/glib-2.0/gobject/gvaluetypes.h:
 
+/usr/include/glib-2.0/gobject/glib-enumtypes.h:
+
 /usr/include/glib-2.0/gobject/gobject-autocleanups.h:
 
 /usr/include/gstreamer-1.0/gst/gstconfig.h:
@@ -1659,11 +1665,15 @@ obj/linux64/Release/src/main.o: \
 
 /usr/include/gstreamer-1.0/gst/video/colorbalance.h:
 
+/usr/include/gstreamer-1.0/gst/video/gstvideoaggregator.h:
+
+/usr/include/gstreamer-1.0/gst/base/gstaggregator.h:
+
+/usr/include/gstreamer-1.0/gst/base/base-prelude.h:
+
 /usr/include/gstreamer-1.0/gst/video/gstvideodecoder.h:
 
 /usr/include/gstreamer-1.0/gst/base/gstadapter.h:
-
-/usr/include/gstreamer-1.0/gst/base/base-prelude.h:
 
 /usr/include/gstreamer-1.0/gst/video/gstvideoutils.h:
 
@@ -1698,6 +1708,8 @@ obj/linux64/Release/src/main.o: \
 /usr/include/gstreamer-1.0/gst/video/videooverlay.h:
 
 /usr/include/gstreamer-1.0/gst/video/gstvideoaffinetransformationmeta.h:
+
+/usr/include/gstreamer-1.0/gst/video/video-anc.h:
 
 /home/parqueexplora/OF/openFrameworks/libs/openFrameworks/video/ofVideoPlayer.h:
 
