@@ -31,4 +31,4 @@ Para compilar en Linux, debe eliminar del archivo addons.make la linea que inclu
 Existen unos ejecutables precompilados que pueden ser probados, son estables en algunos Sistemas Operativos y altamente inestables en otros...
 :) sirvase.
 
-<https://github.com/essteban/CineVivo-Releases>
+<https://github.com/essteban/CineVivo-Releases/releases>
