@@ -26,3 +26,9 @@ cmd + 0 permite acceder a una consola:
 
 
 Para compilar en Linux, debe eliminar del archivo addons.make la linea que incluye ofxSyphon.
+
+
+Existen unos ejecutables precompilados que pueden ser probados, son estables en algunos Sistemas Operativos y altamente inestables en otros...
+:) sirvase.
+
+<https://github.com/essteban/CineVivo-Releases>
