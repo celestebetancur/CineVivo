@@ -17,7 +17,7 @@ void ofApp::setup(){
     //OSC in
     portIn = XML.getValue("PORT:NAME:IN",5612);
     reciever.setup(portIn);
-    osc.setup("127.0.0.1",5612);
+    osc.setup("127.0.0.1",portIn);
 
     //--------------------filters setup -----------------------
 
@@ -53,6 +53,7 @@ void ofApp::setup(){
     backgroundColor = ofColor(0,0,0);
 
     for(int i = 0; i < LIM; i++){
+        prevVideo[i] = "";
         worldCenterX[i] = 0;
         worldCenterY[i] = 0;
         vX[i] = 0;
@@ -106,11 +107,11 @@ void ofApp::setup(){
         syphonON[i] = false;
 #endif
     }
-    /*deviceNUM = cam[0].listDevices().size();
+    deviceNUM = cam[0].listDevices().size();
     for(int i = 0; i < deviceNUM; i++){
         cam[i].setDeviceID(i);
         cam[i].initGrabber(640,480);
-    }*/
+    }
 }
 
 //--------------------------------------------------------------
@@ -121,6 +122,15 @@ void ofApp::update(){
         ofxOscMessage m;
         reciever.getNextMessage(m);
 
+		if (m.getAddress() == "/CineVivo") {
+			executeScriptEvent(m.getArgAsString(0));
+		}
+        if (m.getAddress() == "/play2") {
+            tidalOSCincoming(m);
+        }
+		
+        else{
+            //ofLog() << reciever.getNextMessage(m);
         for(int i  = 0; i < m.getNumArgs(); i++){
             if (m.getAddress() == "/fileExtension"  &&  m.getNumArgs() == 1){
                 vExt = m.getArgAsInt(0);
@@ -229,6 +239,7 @@ void ofApp::update(){
 #endif
                             vIndexPlaying[n] = false;
                             model3DOn[n] = false;
+							shaderOn[n] = false;
                             vW[n] = ofGetWidth();
                             vH[n] = ofGetHeight();
                             four[n].set(ofPoint(0,vH[n]));
@@ -336,21 +347,25 @@ void ofApp::update(){
                             ofLogNotice() << temp;
                         }
                         int n = m.getArgAsInt(0);
-                        videoLC[n].load(temp);
-                        videoLC[n].play();
-                        if(videoLC[n].isLoaded()){
-                            camON[n] = false;
+                        if(prevVideo[n] != temp){
+                            prevVideo[n] = temp;
+                            videoLC[n].load(temp);
+                            videoLC[n].play();
+                            if(videoLC[n].isLoaded()){
+                                camON[n] = false;
 #if (defined(__APPLE__) && defined(__MACH__))
-                            syphonON[n] = false;
+                                syphonON[n] = false;
 #endif
-                            model3DOn[n] = false;
-                            vIndex[n] = 1;
-                            vIndexPlaying[n] = true;
-                            vW[n] = videoLC[n].getWidth();
-                            vH[n] = videoLC[n].getHeight();
-                            four[n].set(ofPoint(0,vH[n]));
-                            three[n].set(ofPoint( vW[n] ,vH[n]));
-                            two[n].set(ofPoint(vW[n],0));
+                                model3DOn[n] = false;
+                                shaderOn[n] = false;
+                                vIndex[n] = 1;
+                                vIndexPlaying[n] = true;
+                                vW[n] = videoLC[n].getWidth();
+                                vH[n] = videoLC[n].getHeight();
+                                four[n].set(ofPoint(0,vH[n]));
+                                three[n].set(ofPoint( vW[n] ,vH[n]));
+                                two[n].set(ofPoint(vW[n],0));
+                            }
                         }
                     }
                 }
@@ -370,6 +385,7 @@ void ofApp::update(){
                         syphonON[n] = false;
 #endif
                         model3DOn[n] = false;
+						shaderOn[n] = false;
                         vIndex[n] = 1;
                         vIndexPlaying[n] = true;
                         vW[n] = videoLC[n].getWidth();
@@ -431,6 +447,7 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/load3D"  &&  m.getNumArgs() == 2){
                     int n = m.getArgAsInt(0);
+					shaderOn[n] = true;
                     camON[n] = false;
                     videoLC[n].stop();
                     vIndex[n] = 0;
@@ -561,8 +578,8 @@ void ofApp::update(){
                     vIndexPlaying[m.getArgAsInt(0)] = 0;
                     videoLC[m.getArgAsInt(0)].setPaused(true);
                 }
-                if (m.getAddress() == "/setFrame" && m.getNumArgs() == 2){
-                    videoLC[m.getArgAsInt(0)].setFrame(m.getArgAsInt(1));
+                if (m.getAddress() == "/setPos" && m.getNumArgs() == 2){
+                    videoLC[m.getArgAsInt(0)].setPosition(m.getArgAsFloat(1));
                 }
                 if (m.getAddress() == "/color" && m.getNumArgs() == 4){
                     vColor[m.getArgAsInt(0)] = ofColor(m.getArgAsInt(1),m.getArgAsInt(2),m.getArgAsInt(3));
@@ -822,6 +839,7 @@ void ofApp::update(){
                 }
             }
         }
+         }
     }
 // Update Audio-----------------------------------------------------
 
@@ -843,7 +861,7 @@ void ofApp::update(){
                 pix[i] = videoLC[i].getPixels();
                 chroma(&pix[i],&texVideo[i],vColorChroma[i]);
             }
-            if(videoLC[i].isFrameNew() && vChroma[i] && maskedIndex[i] == 1){
+            else if(videoLC[i].isFrameNew() && vChroma[i] && maskedIndex[i] == 1){
                 pix[i] = videoLC[i].getPixels();
                 chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],vColorChroma[i]);
             }
@@ -969,6 +987,7 @@ void ofApp::draw(){
             }
             if(vBlend[i]){
                 texVideo[i].draw(one[i], two[i], three[i], four[i]);
+                
             }
 #if (defined(__APPLE__) && defined(__MACH__))
             if(syphonON[i] && syphonDir.isValidIndex(syphonDirId[i])){
@@ -989,7 +1008,7 @@ void ofApp::draw(){
                 ofDisableBlendMode();
                 ofDisableSeparateSpecularLight();
             }
-            if(imageON[i] == true){
+            if(imageON[i] == true && maskedIndex[i] == 0){
                 pictures[i].getTexture().draw(one[i], two[i], three[i], four[i]);
             }
             if(filterOn[i] == true && model3DOn[i] == false){
@@ -1089,7 +1108,9 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-
+    /*int width = ofGetWidth();
+    float pct = (float)x / (float)width;
+    videoLC[1].setPosition(pct);*/
 }
 
 //--------------------------------------------------------------
@@ -1536,11 +1557,12 @@ void ofApp::executeScriptEvent(string getText) {
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
-                if(texto[1] == XML.getValue("WORDS:NAME:SETFRAME","setFrame") && texto.size() == 3){
-                    string temp = "/setFrame " + ofToString(numV) + " " + texto[2];
+                if(texto[1] == XML.getValue("WORDS:NAME:SETPOS","setPos") && texto.size() == 3){
+                    string temp = "/setPos " + ofToString(numV) + " " + texto[2];
                     ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/setFrame");
-                    s.addIntArg(ofToInt(texto[2]));
+                    s.setAddress("/setPos");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FILTER","filter") && texto.size() == 3){
@@ -1677,4 +1699,47 @@ void ofApp::executeScriptEvent(string getText) {
         }
         texto.clear();
     }
+}
+
+void ofApp::tidalOSCincoming(ofxOscMessage tidal) {
+	int numArgs = tidal.getNumArgs();
+	//ofLog() << numArgs;
+	string temp;
+    int orbit = 1;
+	for (int i = 0; i < numArgs; i++) {
+		if (i % 2 == 0){
+            if(_tCycle != _tPreviousCycle){
+                if (tidal.getArgAsString(i) == "cps") {
+                    _tCps = tidal.getArgAsFloat(i + 1);
+                }
+                else if (tidal.getArgAsString(i) == "cycle") {
+                    _tCycle = tidal.getArgAsFloat(i + 1);
+                    _tCycle = _tPreviousCycle;
+                }
+                else if (tidal.getArgAsString(i) == "delta") {
+                    _tDelta = tidal.getArgAsFloat(i + 1);
+                }
+                else if (tidal.getArgAsString(i) == "orbit") {
+                    orbit = tidal.getArgAsFloat(i + 1);
+                    temp += ofToString(orbit) + " shader ";
+                }
+            }
+            if(_tCycle == _tPreviousCycle){
+                 if (tidal.getArgAsString(i) == "s") {
+                     temp += ofToString(orbit) +" load  "+ ofToString(tidal.getArgAsString(i + 1))  + "\n";
+                 }
+                 else if (tidal.getArgAsString(i) == "begin") {
+                     temp += ofToString(orbit) + " setPos " + ofToString(tidal.getArgAsFloat(i + 1)) + "\n";
+                 }
+                 else if (tidal.getArgAsString(i) == "gain") {
+                     temp += ofToString(orbit) + " opacity " + ofToString(tidal.getArgAsFloat(i + 1)*255.0f) + "\n";
+                 }
+                 else if (tidal.getArgAsString(i) == "speed") {
+                     temp += ofToString(orbit) + " speed " + ofToString(tidal.getArgAsFloat(i + 1)) + "\n";
+                 }
+            }
+		}
+        //ofLog() << temp;
+	}
+    executeScriptEvent(temp);
 }

@@ -1,6 +1,7 @@
 ### C++ ###
 
-obj/
+*/[Oo]bj/*
+.DS_Store
 
 # Prerequisites
 *.d

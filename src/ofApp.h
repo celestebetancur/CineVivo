@@ -39,6 +39,7 @@ public:
     void blend(ofPixels *src1, ofPixels *src2, ofTexture *texture);
     
     void executeScriptEvent(string getText);
+	void tidalOSCincoming(ofxOscMessage tidal);
     
     //OSC
     ofxXmlSettings XML;
@@ -67,6 +68,7 @@ public:
     ofImage pictures[LIM];
     ofSoundPlayer audio[20];
 
+    string prevVideo[LIM];
     int worldCenterX[LIM];
     int worldCenterY[LIM];
     int rectMode[LIM];
@@ -139,6 +141,11 @@ public:
     //Timer
     float time = 0;
     float reference = 500;
+
+	float _tCps = 0.562;
+	float _tCycle = 0;
+	float _tDelta = 0.889;
+    float _tPreviousCycle = -1.0f;
     
 #if (defined(__APPLE__) && defined(__MACH__))
     // syphon
