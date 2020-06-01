@@ -22,6 +22,8 @@ public:
     void draw();
     void exit();
     
+    void timmer(float time);
+    
     void keyPressed(int key);
     void keyReleased(int key);
     void mouseMoved(int x, int y );
@@ -38,8 +40,9 @@ public:
     void chromaMask(ofPixels *src1, ofPixels *src2, ofTexture *texture, ofColor colorChroma);
     void blend(ofPixels *src1, ofPixels *src2, ofTexture *texture);
     
-    void executeScriptEvent(string getText);
+    void executeScriptEvent(string getText, bool verbose);
 	void tidalOSCincoming(ofxOscMessage tidal);
+    void tidalOSCNewSpec(ofxOscMessage tidal);
     
     //OSC
     ofxXmlSettings XML;
@@ -48,6 +51,7 @@ public:
     ofxOscSender osc;
     int portIn;
     int portOut;
+    bool verboseOSC = true;
     
     // CineVivo LiveCoding
     ofPoint one[LIM],two[LIM],three[LIM],four[LIM];
@@ -58,6 +62,8 @@ public:
     bool vExt = false;
     ofColor backgroundColor;
     bool backgroundAuto;
+    int windowWidth = 640;
+    int windowHeight = 480;
     
     ofVideoGrabber cam[LIM];
     bool camON[LIM];
@@ -69,9 +75,13 @@ public:
     ofSoundPlayer audio[20];
 
     string prevVideo[LIM];
+    string prevShader[LIM];
     int worldCenterX[LIM];
     int worldCenterY[LIM];
     int rectMode[LIM];
+    float rotationSpeedX[LIM];
+    float rotationSpeedY[LIM];
+    float rotationSpeedZ[LIM];
     int vX[LIM];
     int vY[LIM];
     int vIndex[LIM];
@@ -81,11 +91,18 @@ public:
     float vScaleX[LIM];
     float vScaleY[LIM];
     ofColor vColor[LIM];
+    int vRedChann[LIM];
+    int vGreenChann[LIM];
+    int vBlueChann[LIM];
     int vOpacity[LIM];
+    float vVolume[LIM];
     float vRotX [LIM];
     float vRotY [LIM];
     float vRotZ [LIM];
     float vSpeed [LIM];
+    int vTotalFrames [LIM];
+    int vInitPoint [LIM];
+    int vEndPoint [LIM];
     int vW [LIM];
     int vH [LIM];
     bool imageON[LIM];
@@ -138,14 +155,21 @@ public:
     bool cursor;
     int numLines = 0;
     
+//-----TIDAL----------------------------------------------------------
+    
     //Timer
     float time = 0;
-    float reference = 500;
+    int referenceCycle = 0;
 
 	float _tCps = 0.562;
 	float _tCycle = 0;
 	float _tDelta = 0.889;
     float _tPreviousCycle = -1.0f;
+    string _tTemp;
+    int _tCpsToCV = 562;
+    bool _tScheduler = false;
+    
+//--------------------------------------------------------------------
     
 #if (defined(__APPLE__) && defined(__MACH__))
     // syphon

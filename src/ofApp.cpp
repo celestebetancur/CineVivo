@@ -4,7 +4,7 @@
 void ofApp::setup(){
 
     ofSetEscapeQuitsApp(false);
-    ofSetWindowShape(640, 480);
+    ofSetWindowShape(windowWidth, windowHeight);
     ofSetWindowTitle("CineVivo");
     ofSetVerticalSync(true);
 
@@ -12,6 +12,7 @@ void ofApp::setup(){
 
     //----------------------OSC setup -------------------------
 
+    //OSC out
     portOut = XML.getValue("PORT:NAME:OUT",5613);
     sender.setup("127.0.0.1",portOut);
     //OSC in
@@ -54,20 +55,29 @@ void ofApp::setup(){
 
     for(int i = 0; i < LIM; i++){
         prevVideo[i] = "";
-        worldCenterX[i] = 0;
-        worldCenterY[i] = 0;
+        worldCenterX[i] = ofGetWidth()/2;
+        worldCenterY[i] = ofGetHeight()/2;
+        rotationSpeedX[i] = 0;
+        rotationSpeedX[i] = 0;
+        rotationSpeedX[i] = 0;
         vX[i] = 0;
         vY[i] = 0;
         vIndex[i] = 0;
         vIndexPlaying[i] = 0;
         vColor[i] = ofColor(255);
+        vRedChann[i] = 255;
+        vGreenChann[i] = 255;
+        vBlueChann[i] = 255;
         vScaleX[i] = 1;
         vScaleY[i] = 1;
         vOpacity[i] = 255;
+        vVolume[i] = 0;
         vRotX[i] = 0;
         vRotY[i] = 0;
         vRotZ[i] = 0;
         vSpeed[i] = 1;
+        vInitPoint[i] = 0.0f;
+        vEndPoint[i];
         camON[i] = false;
         deviceID[i] = -1;
         one[i].set(0,0);
@@ -77,7 +87,7 @@ void ofApp::setup(){
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
         pictures[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
-        rectMode[i] = 0;
+        rectMode[i] = 1;
         maskedIndex[i] = 0;
         currentFilter[i] = 0;
         filterOn[i] = false;
@@ -110,28 +120,34 @@ void ofApp::setup(){
     deviceNUM = cam[0].listDevices().size();
     for(int i = 0; i < deviceNUM; i++){
         cam[i].setDeviceID(i);
-        cam[i].initGrabber(640,480);
+        cam[i].initGrabber(windowWidth,windowHeight);
     }
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-
+    
+//-----------OSC------------------------------------------------
     while (reciever.hasWaitingMessages()){
 
         ofxOscMessage m;
         reciever.getNextMessage(m);
 
 		if (m.getAddress() == "/CineVivo") {
-			executeScriptEvent(m.getArgAsString(0));
+			executeScriptEvent(m.getArgAsString(0),verboseOSC);
 		}
         if (m.getAddress() == "/play2") {
             tidalOSCincoming(m);
         }
-		
+        if (m.getAddress() == "/cinevivo") {
+            tidalOSCNewSpec(m);
+        }
         else{
             //ofLog() << reciever.getNextMessage(m);
         for(int i  = 0; i < m.getNumArgs(); i++){
+            if (m.getAddress() == "/setVerbose"  &&  m.getNumArgs() == 1){
+                verboseOSC = m.getArgAsBool(0);
+            }
             if (m.getAddress() == "/fileExtension"  &&  m.getNumArgs() == 1){
                 vExt = m.getArgAsInt(0);
             }
@@ -139,7 +155,9 @@ void ofApp::update(){
                 backgroundAuto = m.getArgAsInt(0);
             }
             if (m.getAddress() == "/windowShape"  &&  m.getNumArgs() == 2){
-                ofSetWindowShape(m.getArgAsInt(0), m.getArgAsInt(1));
+                windowWidth = m.getArgAsInt(0);
+                windowHeight = m.getArgAsInt(1);
+                ofSetWindowShape(windowWidth, windowHeight);
             }
             if (m.getAddress() == "/backColor" && m.getNumArgs() == 3){
                 backgroundColor = ofColor(m.getArgAsInt(0),m.getArgAsInt(1),m.getArgAsInt(2));
@@ -340,11 +358,9 @@ void ofApp::update(){
                         string temp;
                         if(vExt == 1){
                             temp = "videos/" + m.getArgAsString(1);
-                            ofLogNotice() << temp;
                         }
                         if(vExt == 0) {
                             temp = "videos/" + m.getArgAsString(1) + ".mov";
-                            ofLogNotice() << temp;
                         }
                         int n = m.getArgAsInt(0);
                         if(prevVideo[n] != temp){
@@ -352,6 +368,8 @@ void ofApp::update(){
                             videoLC[n].load(temp);
                             videoLC[n].play();
                             if(videoLC[n].isLoaded()){
+                                vTotalFrames[n] = videoLC[n].getTotalNumFrames();
+                                vEndPoint[n] = vTotalFrames[n];
                                 camON[n] = false;
 #if (defined(__APPLE__) && defined(__MACH__))
                                 syphonON[n] = false;
@@ -524,19 +542,28 @@ void ofApp::update(){
                 if (m.getAddress() == "/posY" && m.getNumArgs() == 2){
                     vY[m.getArgAsInt(0)] = m.getArgAsInt(1);
                 }
-                if (m.getAddress() == "/rot" && m.getNumArgs() == 4){
+                if (m.getAddress() == "/rotate" && m.getNumArgs() == 4){
                     vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                     vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(2);
                     vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(3);
                 }
-                if (m.getAddress() == "/rotX" && m.getNumArgs() == 2){
+                if (m.getAddress() == "/rotateX" && m.getNumArgs() == 2){
                     vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                 }
-                if (m.getAddress() == "/rotY" && m.getNumArgs() == 2){
+                if (m.getAddress() == "/rotateY" && m.getNumArgs() == 2){
                     vRotY[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                 }
-                if (m.getAddress() == "/rotZ" && m.getNumArgs() == 2){
+                if (m.getAddress() == "/rotateZ" && m.getNumArgs() == 2){
                     vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                }
+                if (m.getAddress() == "/rotSpeedX" && m.getNumArgs() == 2){
+                    rotationSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                }
+                if (m.getAddress() == "/rotSpeedY" && m.getNumArgs() == 2){
+                    rotationSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                }
+                if (m.getAddress() == "/rotSpeedZ" && m.getNumArgs() == 2){
+                    rotationSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                 }
                 if (m.getAddress() == "/size" && m.getNumArgs() == 3){
                     vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
@@ -579,13 +606,43 @@ void ofApp::update(){
                     videoLC[m.getArgAsInt(0)].setPaused(true);
                 }
                 if (m.getAddress() == "/setPos" && m.getNumArgs() == 2){
-                    videoLC[m.getArgAsInt(0)].setPosition(m.getArgAsFloat(1));
+                    int n = m.getArgAsInt(0);
+                    vInitPoint[n] = (int)(m.getArgAsFloat(1) * vTotalFrames[n]);
+                    videoLC[n].setFrame(vInitPoint[n]);
+                }
+                if (m.getAddress() == "/setEnd" && m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    vEndPoint[n] = (int)(m.getArgAsFloat(1) * vTotalFrames[n]);
                 }
                 if (m.getAddress() == "/color" && m.getNumArgs() == 4){
-                    vColor[m.getArgAsInt(0)] = ofColor(m.getArgAsInt(1),m.getArgAsInt(2),m.getArgAsInt(3));
+                    int n = m.getArgAsInt(0);
+                    vRedChann[n] = m.getArgAsInt(1);
+                    vGreenChann[n] = m.getArgAsInt(2);
+                    vBlueChann[n] = m.getArgAsInt(3);
+                    vColor[n] = ofColor(vRedChann[n],vGreenChann[n],vBlueChann[n]);
+                }
+                if (m.getAddress() == "/r" && m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    vRedChann[n] = m.getArgAsInt(1);
+                    vColor[n] = ofColor(vRedChann[n],vGreenChann[n],vBlueChann[n]);
+                }
+                if (m.getAddress() == "/g" && m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    vGreenChann[n] = m.getArgAsInt(1);
+                    vColor[n] = ofColor(vRedChann[n],vGreenChann[n],vBlueChann[n]);
+                }
+                if (m.getAddress() == "/b" && m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    vBlueChann[n] = m.getArgAsInt(1);
+                    vColor[n] = ofColor(vRedChann[n],vGreenChann[n],vBlueChann[n]);
                 }
                 if (m.getAddress() == "/opacity" && m.getNumArgs() == 2){
                     vOpacity[m.getArgAsInt(0)] = m.getArgAsInt(1);
+                }
+                if (m.getAddress() == "/vVolume" && m.getNumArgs() == 2){
+                    int n = m.getArgAsInt(0);
+                    vVolume[n] = m.getArgAsInt(1);
+                    videoLC[n].setVolume(n);
                 }
                 if (m.getAddress() == "/filter"){
                     int n = m.getArgAsInt(0);
@@ -691,14 +748,19 @@ void ofApp::update(){
                     }
                 }
                 if (m.getAddress() == "/shader"){
+                    int n = m.getArgAsInt(0);
 #if (defined(__APPLE__) && defined(__MACH__))
-                    if(syphonON[m.getArgAsInt(0)] == 1)
+                    if(syphonON[n] == 1)
                         ofLogNotice() << "CineVivo[notice]: Shaders can not be applied to syphon inputs";
                     else{
 #endif
-                        string shaderName = "shaders/" + m.getArgAsString(1);
-                        shaderOn[m.getArgAsInt(0)] = true;
-                        shader[m.getArgAsInt(0)].load(shaderName);
+                        string name = m.getArgAsString(1);
+                        if(prevShader[n] != name){
+                            prevShader[n] = name;
+                            string shaderName = "shaders/" + name;
+                            shaderOn[m.getArgAsInt(0)] = true;
+                            shader[n].load(shaderName);
+                        }
 #if (defined(__APPLE__) && defined(__MACH__))
                     }
 #endif
@@ -841,6 +903,12 @@ void ofApp::update(){
         }
          }
     }
+//-----------UPDATE TSCHEDULER--------------------------------------
+    timmer(_tCpsToCV);
+    
+    if(_tScheduler){
+        executeScriptEvent(_tTemp, verboseOSC);
+    }
 // Update Audio-----------------------------------------------------
 
     ofSoundUpdate();
@@ -856,14 +924,23 @@ void ofApp::update(){
             if(videoLC[i].isFrameNew() && !vChroma[i]){
                 pix[i] = videoLC[i].getPixels();
                 texVideo[i].loadData(pix[i]);
+                if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
+                    videoLC[i].setFrame(vInitPoint[i]);
+                }
             }
             else if(videoLC[i].isFrameNew() && vChroma[i]){
-                pix[i] = videoLC[i].getPixels();
-                chroma(&pix[i],&texVideo[i],vColorChroma[i]);
+                    pix[i] = videoLC[i].getPixels();
+                    chroma(&pix[i],&texVideo[i],vColorChroma[i]);
+                if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
+                    videoLC[i].setPosition(vInitPoint[i]);
+                }
             }
             else if(videoLC[i].isFrameNew() && vChroma[i] && maskedIndex[i] == 1){
                 pix[i] = videoLC[i].getPixels();
                 chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],vColorChroma[i]);
+                if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
+                    videoLC[i].setPosition(vInitPoint[i]);
+                }
             }
         }
         if(i < deviceNUM){
@@ -908,14 +985,16 @@ void ofApp::update(){
         }
     }
     numVideosLoaded = c;
-    if(time+reference < ofGetElapsedTimeMillis()) {
-        time = ofGetElapsedTimeMillis();
-        cursor = !cursor;
+    if(cursor == true){
+        if(time+500 < ofGetElapsedTimeMillis()) {
+            time = ofGetElapsedTimeMillis();
+            cursor = !cursor;
+        }
     }
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-
+    
     ofSetFullscreen(fullScreen);
     ofSetBackgroundColor(backgroundColor);
     ofSetBackgroundAuto(backgroundAuto);
@@ -931,9 +1010,10 @@ void ofApp::draw(){
             ofTranslate(worldCenterX[i],worldCenterY[i]);
             ofPushMatrix();
 
-            ofRotateXDeg(vRotX[i]);
-            ofRotateYDeg(vRotY[i]);
-            ofRotateZDeg(vRotZ[i]);
+            float tempMillis = ofGetElapsedTimeMillis();
+            ofRotateXDeg(vRotX[i] * (rotationSpeedX[i]*tempMillis));
+            ofRotateYDeg(vRotY[i] * (rotationSpeedY[i]*tempMillis));
+            ofRotateZDeg(vRotZ[i] * (rotationSpeedY[i]*tempMillis));
             if(rectMode[i] == 0){
                 ofTranslate(0,0);
             }
@@ -1059,7 +1139,7 @@ void ofApp::keyPressed(int key){
     if(modifier) {
         switch(key) {
             case 5: case 'e':
-                executeScriptEvent(textToExe);
+                executeScriptEvent(textToExe,verboseOSC);
                 return;
             case 20: case 't':
                 t_visible = !t_visible;
@@ -1209,7 +1289,7 @@ void ofApp::blend(ofPixels *src1, ofPixels *src2, ofTexture *texture){
     texture->loadData(pix);
 }
 //-----------------------------------------------------------
-void ofApp::executeScriptEvent(string getText) {
+void ofApp::executeScriptEvent(string getText, bool verbose) {
     // received on editor CTRL/Super + e
 
     std::vector<string> textClean;
@@ -1225,49 +1305,74 @@ void ofApp::executeScriptEvent(string getText) {
                     texto.push_back(textClean[i]);
                 }
             }
+            if(texto[0] == XML.getValue("WORDS:NAME:SETVERBOSE","setVerbose") && texto.size() == 2){
+                if(verbose){
+                    ofLogNotice() << "CineVivo[editor]:Verbose: " + texto[1];
+                }
+                s.setAddress("/setVerbose");
+                s.addIntArg(ofToInt(texto[1]));
+                osc.sendMessage(s);
+            }
             if(texto[0] == XML.getValue("WORDS:NAME:FSIZE","fontSize") && texto.size() == 2){
                 fontSize = ofToInt(texto[1]);
                 font.load("fonts/font.ttf", fontSize, true, true);
-                ofLogNotice() << "CineVivo[editor]: Font Size: " + texto[1];
+                if(verbose){
+                    ofLogNotice() << "CineVivo[editor]: Font Size: " + texto[1];
+                }
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FCOLOR","fontColor") && texto.size() == 4){
                 fontColor = ofColor(ofToInt(texto[1]),ofToInt(texto[2]),ofToInt(texto[3]));
-                ofLogNotice() << "CineVivo[editor]: Font Color: " + texto[1] + " " + texto[2] + " " + texto[3];
+                if(verbose){
+                    ofLogNotice() << "CineVivo[editor]: Font Color: " + texto[1] + " " + texto[2] + " " + texto[3];
+                }
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FILEEXT","fileExtension") && texto.size() == 2){
                 if (ofToInt(texto[1]) == 0 || ofToInt(texto[1]) == 1){
-                    string temp = "/fileExtension " + texto[1];
-                    ofLogNotice() << "CineVivo[setup]: File extension: " + texto[1];
+                    if(verbose){
+                        string temp = "/fileExtension " + texto[1];
+                        ofLogNotice() << "CineVivo[setup]: " + temp;
+                    }
                     s.setAddress("/fileExtension");
                     s.addIntArg(ofToInt(texto[1]));
                     osc.sendMessage(s);
                 } else {
-                    ofLogNotice() << "CineVivo[error]: Invalid value: " + texto[1];
+                    if(verbose){
+                        ofLogNotice() << "CineVivo[error]: Invalid value: " + texto[1];
+                    }
                 }
             }
             if(texto[0] == "english" && texto.size() == 1){
-
-                ofLogNotice() << "CineVivo[setup]: English syntax loaded";
+                if(verbose){
+                    ofLogNotice() << "CineVivo[setup]: English syntax loaded";
+                }
             }
             if(texto[0] == "espanol" && texto.size() == 1){
                 XML.load ("xml/languageES.xml");
-                ofLogNotice() << "CineVivo[setup]: Sintaxis en Español cargada";
+                if(verbose){
+                    ofLogNotice() << "CineVivo[setup]: Sintaxis en Español cargada";
+                }
             }
             if(texto[0] == XML.getValue("WORDS:NAME:CUSTOM","custom") && texto.size() == 1){
                 XML.load ("xml/languageCustom.xml");
-                ofLogNotice() << "CineVivo[setup]: Custom syntax loaded";
+                if(verbose){
+                    ofLogNotice() << "CineVivo[setup]: Custom syntax loaded";
+                }
             }
             if(texto[0] == XML.getValue("WORDS:NAME:WSHAPE","windowShape") && texto.size() == 3){
-                string temp = "/windowShape " + texto[1] + " " + texto[2];
-                ofLogNotice() << "CineVivo[setup]: " << temp;
+                if(verbose){
+                    string temp = "/windowShape " + texto[1] + " " + texto[2];
+                    ofLogNotice() << "CineVivo[setup]: " << temp;
+                }
                 s.setAddress("/windowShape");
                 s.addIntArg(ofToInt(texto[1]));
                 s.addIntArg(ofToInt(texto[2]));
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:BCOLOR","backColor") && texto.size() == 4){
-                string temp = "/backColor " + texto[1] + " " + texto[2] + " " + texto[3];
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/backColor " + texto[1] + " " + texto[2] + " " + texto[3];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/backColor");
                 s.addIntArg(ofToInt(texto[1]));
                 s.addIntArg(ofToInt(texto[2]));
@@ -1275,64 +1380,82 @@ void ofApp::executeScriptEvent(string getText) {
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:BCOLOR","backColor") && texto.size() == 2){
-                string temp = "/backColor " + texto[1];
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/backColor " + texto[1];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/backColor");
                 s.addIntArg(ofToInt(texto[1]));
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:BAUTO","backgroundAuto") && texto.size() == 2){
-                string temp = "/backgroundAuto " + texto[1];
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/backgroundAuto " + texto[1];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/backgroundAuto");
                 s.addIntArg(ofToInt(texto[1]));
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FSCREEN","fullscreen") && texto.size() == 2){
-                string temp = "/fullscreen " + texto[1];
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/fullscreen " + texto[1];
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/fullscreen");
                 s.addIntArg(ofToInt(texto[1]));
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:CLEAN","clean") && texto.size() == 1){
-                string temp = "/clean ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/clean ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/clean");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:PLAYALL","playAll") && texto.size() == 1){
-                string temp = "/playAll ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/playAll ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/playAll");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:STOPALL","stopAll") && texto.size() == 1){
-                string temp = "/stopAll ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/stopAll ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/stopAll");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:PAUSEALL","pauseAll") && texto.size() == 1){
-                string temp = "/pauseAll ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/pauseAll ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/pauseAll");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FITAHOR","fitAllHorizontal") && texto.size() == 1){
-                string temp = "/fitAllHorizontal ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/fitAllHorizontal ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/fitAllHorizontal");
                 s.addIntArg(0);
                 osc.sendMessage(s);
             }
             if(texto[0] == XML.getValue("WORDS:NAME:FITAVER","fitAllVertical") && texto.size() == 1){
-                string temp = "/fitAllVertical ";
-                ofLogNotice() << "CineVivo[send]: " << temp;
+                if(verbose){
+                    string temp = "/fitAllVertical ";
+                    ofLogNotice() << "CineVivo[send]: " << temp;
+                }
                 s.setAddress("/fitAllVertical");
                 s.addIntArg(0);
                 osc.sendMessage(s);
@@ -1347,16 +1470,20 @@ void ofApp::executeScriptEvent(string getText) {
 
             if(numV > -1 && numV < 10){
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD","load") && texto.size() == 3){
-                    string temp = "/load " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/load " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/load");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD","load") && texto.size() == 4){
-                    string temp = "/load " + ofToString(numV) + " " + texto[2] + " " + texto[3];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/load " + ofToString(numV) + " " + texto[2] + " " + texto[3];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/load");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
@@ -1364,63 +1491,79 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:LOAD3D","load3D") && texto.size() == 3){
-                  string temp = "/load3D " + ofToString(numV) + " " + texto[2];
-                  ofLogNotice() << "CineVivo[send]: " << temp;
-                  s.setAddress("/load3D");
-                  s.addIntArg(numV);
-                  s.addStringArg(texto[2]);
-                  osc.sendMessage(s);
+                    if(verbose){
+                        string temp = "/load3D " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/load3D");
+                    s.addIntArg(numV);
+                    s.addStringArg(texto[2]);
+                    osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:LOADAUDIO","loadAudio") && texto.size() == 3){
-                  string temp = "/loadAudio " + ofToString(numV) + " " + texto[2];
-                  ofLogNotice() << "CineVivo[send]: " << temp;
-                  s.setAddress("/loadAudio");
-                  s.addIntArg(numV);
-                  s.addStringArg(texto[2]);
-                  osc.sendMessage(s);
+                    if(verbose){
+                        string temp = "/loadAudio " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/loadAudio");
+                    s.addIntArg(numV);
+                    s.addStringArg(texto[2]);
+                    osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:VOLUMEAUDIO","volumeAudio") && texto.size() == 3){
-                  string temp = "/volumeAudio " + ofToString(numV) + " " + texto[2];
-                  ofLogNotice() << "CineVivo[send]: " << temp;
-                  s.setAddress("/volumeAudio");
-                  s.addIntArg(numV);
-                  s.addFloatArg(ofToFloat(texto[2]));
-                  osc.sendMessage(s);
+                    if(verbose){
+                        string temp = "/volumeAudio " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/volumeAudio");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
+                    osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FREE","free") && texto.size() == 2){
-                    string temp = "/free " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/free " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/free");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:MASK","mask") && texto.size() == 3){
-                    string temp = "/mask " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/mask " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/mask");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:IMAGE","image") && texto.size() == 3){
-                    string temp = "/image " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/image " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/image");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:RECTMODE","rectMode") && texto.size() == 3){
-                    string temp = "/rectMode " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/rectMode " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/rectMode");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:WCENTER","worldCenter") && texto.size() == 4){
-                    string temp = "/worldCenter " + texto[1] + " " + texto[2]+ " " + texto[3];
-                    ofLogNotice() << "CineVivo[setup]: " << temp;
+                    if(verbose){
+                        string temp = "/worldCenter " + texto[1] + " " + texto[2]+ " " + texto[3];
+                        ofLogNotice() << "CineVivo[setup]: " << temp;
+                    }
                     s.setAddress("/worldCenter");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1428,8 +1571,10 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:POS","pos") && texto.size() == 4){
-                    string temp = "/pos " + ofToString(numV) + " " + texto[2] + " " + texto[3];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/pos " + ofToString(numV) + " " + texto[2] + " " + texto[3];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/pos");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1437,58 +1582,102 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:POSX","posX") && texto.size() == 3){
-                    string temp = "/posX " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/posX " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/posX");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] ==  XML.getValue("WORDS:NAME:POSY","posY") && texto.size() == 3){
-                    string temp = "/posY " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/posY " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/posY");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == XML.getValue("WORDS:NAME:ROT","rot") && texto.size() == 5){
-                    string temp = "/rotX " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/rot");
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTATE","rotate") && texto.size() == 5){
+                    if(verbose){
+                        string temp = "/rotate " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotate");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     s.addFloatArg(ofToFloat(texto[3]));
                     s.addFloatArg(ofToFloat(texto[4]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == XML.getValue("WORDS:NAME:ROTX","rotX") && texto.size() == 3){
-                    string temp = "/rotX " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/rotX");
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTATEX","rotateX") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotateX " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotateX");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == XML.getValue("WORDS:NAME:ROTY","rotY") && texto.size() == 3){
-                    string temp = "/rotY " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/rotY");
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTATEY","rotateY") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotateY " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotateY");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
-                if(texto[1] == XML.getValue("WORDS:NAME:ROTZ","rotZ") && texto.size() == 3){
-                    string temp = "/rotZ " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
-                    s.setAddress("/rotZ");
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTATEZ","rotateZ") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotateZ " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotateZ");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTSPEEDX","rotSpeedX") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotSpeedX " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotSpeedX");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTSPEEDY","rotSpeedY") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotSpeedY " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotSpeedY");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:ROTSPEEDZ","rotSpeedZ") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/rotateZ " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/rotSpeedZ");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SIZE","size") && texto.size() == 4){
-                    string temp = "/sizeX " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/size " + ofToString(numV) + " " + texto[2] + " " + texto[3];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/size");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1496,24 +1685,30 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:WIDTH","width") && texto.size() == 3){
-                    string temp = "/width " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/width " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/width");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:HEIGHT","height") && texto.size() == 3){
-                    string temp = "/height " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/height " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/height");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SCALE","scale") && texto.size() == 4){
-                    string temp = "/scale " + ofToString(numV) + " " + texto[2] + " " + texto[3];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/scale " + ofToString(numV) + " " + texto[2] + " " + texto[3];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/scale");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
@@ -1521,85 +1716,117 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SPEED","speed") && texto.size() == 3){
-                    string temp = "/speed " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/speed " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/speed");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:PLAY","play") && texto.size() == 2){
-                  string temp = "/play " + ofToString(numV);
-                  ofLogNotice() << "CineVivo[send]: " << temp;
-                  s.setAddress("/play");
-                  s.addIntArg(numV);
-                  osc.sendMessage(s);
+                    if(verbose){
+                        string temp = "/play " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/play");
+                    s.addIntArg(numV);
+                    osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:LOOPSTATE","loopState") && texto.size() == 3){
-                  string temp = "/loopState " + ofToString(numV) + " " + texto[2];
-                  ofLogNotice() << "CineVivo[send]: " << temp;
-                  s.setAddress("/loopState");
-                  s.addIntArg(numV);
-                  s.addIntArg(ofToInt(texto[2]));
-                  osc.sendMessage(s);
+                    if(verbose){
+                        string temp = "/loopState " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/loopState");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:STOP","stop") && texto.size() == 2){
-                    string temp = "/stop " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/stop " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/stop");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:PAUSE","pause") && texto.size() == 2){
-                    string temp = "/pause " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/pause " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/pause");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SETPOS","setPos") && texto.size() == 3){
-                    string temp = "/setPos " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/setPos " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/setPos");
                     s.addIntArg(numV);
                     s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:SETEND","setEnd") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/setEnd " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/setEnd");
+                    s.addIntArg(numV);
+                    s.addFloatArg(ofToFloat(texto[2]));
+                    osc.sendMessage(s);
+                }
                 if(texto[1] == XML.getValue("WORDS:NAME:FILTER","filter") && texto.size() == 3){
-                    string temp = "/filter " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/filter " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/filter");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FILTERM","filterMode") && texto.size() == 3){
-                    string temp = "/filterMode " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/filterMode " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/filterMode");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:SHADER","shader") && texto.size() == 3){
-                    string temp = "/shader " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/shader " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/shader");
                     s.addIntArg(numV);
                     s.addStringArg(texto[2]);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:BLUR","blur") && texto.size() == 3){
-                    string temp = "/blur " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/blur " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/blur");
                     s.addIntArg(numV);
                     s.addIntArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:CHROMA","chroma") && texto.size() == 5){
-                    string temp = "/chroma " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/chroma " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/chroma");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1608,22 +1835,28 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:CHROMA","chroma") && texto.size() == 2){
-                    string temp = "/chroma " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/chroma " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/chroma");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:RANDOM","random") && texto.size() == 2){
-                    string temp = "/random " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/random " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/random");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:BLEND","blend") && texto.size() == 4){
-                    string temp = "/blend " + ofToString(numV) + " " + texto[2] + " " + texto[3];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/blend " + ofToString(numV) + " " + texto[2] + " " + texto[3];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/blend");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1631,16 +1864,20 @@ void ofApp::executeScriptEvent(string getText) {
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FEEDBACK","feedback") && texto.size() == 3){
-                    string temp = "/feedback " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/feedback " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/feedback");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:COLOR","color") && texto.size() == 5){
-                    string temp = "/color " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/color " + ofToString(numV) + " " + texto[2] + " " + texto[3] + " " + texto[4];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/color");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
@@ -1648,38 +1885,88 @@ void ofApp::executeScriptEvent(string getText) {
                     s.addIntArg(ofToInt(texto[4]));
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:RED","r") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/r " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/r");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:GREEN","g") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/g " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/g");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
+                if(texto[1] == XML.getValue("WORDS:NAME:BLUE","b") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/b " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/b");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
                 if(texto[1] == XML.getValue("WORDS:NAME:OPACITY","opacity") && texto.size() == 3){
-                    string temp = "/opacity " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/opacity " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/opacity");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
+                if(texto[1] == XML.getValue("WORDS:NAME:VIDEOVOLUME","vVolume") && texto.size() == 3){
+                    if(verbose){
+                        string temp = "/vVolume " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
+                    s.setAddress("/vVolume");
+                    s.addIntArg(numV);
+                    s.addIntArg(ofToInt(texto[2]));
+                    osc.sendMessage(s);
+                }
                 if(texto[1] == XML.getValue("WORDS:NAME:FIT","fit") && texto.size() == 2){
-                    string temp = "/fit " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/fit " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/fit");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FHORIZONTAL","fitHorizontal") && texto.size() == 2){
-                    string temp = "/fitHorizontal " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/fitHorizontal " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/fitHorizontal");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FVERTICAL","fitVertical") && texto.size() == 2){
-                    string temp = "/fitVertical " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/fitVertical " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/fitVertical");
                     s.addIntArg(numV);
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:POINTS","points") && texto.size() == 10){
-                    string temp = "/points " + ofToString(numV);
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/points " + ofToString(numV);
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/points");
                     s.addIntArg(numV);
                     for(int i = 2; i < 10; i++){
@@ -1687,19 +1974,39 @@ void ofApp::executeScriptEvent(string getText) {
                     }
                     osc.sendMessage(s);
                 }
+#if (defined(__APPLE__) && defined(__MACH__))
                 if(texto[1] == XML.getValue("WORDS:NAME:SYPHON","syphon") && texto.size() == 3){
-                    string temp = "/syphon " + ofToString(numV) + " " + texto[2];
-                    ofLogNotice() << "CineVivo[send]: " << temp;
+                    if(verbose){
+                        string temp = "/syphon " + ofToString(numV) + " " + texto[2];
+                        ofLogNotice() << "CineVivo[send]: " << temp;
+                    }
                     s.setAddress("/syphon");
                     s.addIntArg(numV);
                     s.addIntArg(ofToInt(texto[2]));
                     osc.sendMessage(s);
                 }
+#endif
             }
         }
         texto.clear();
     }
 }
+
+
+//--------------------------------------------------------------
+void ofApp::timmer(float timeTo){
+    float currentTime = ofGetElapsedTimeMillis();
+    if(currentTime - time >= timeTo){
+        time = currentTime;
+        referenceCycle++;
+        _tScheduler = true;
+        //ofLog() << "Cycle: " << referenceCycle;
+    } else{
+        _tScheduler = false;
+    }
+}
+
+//--------------------------------------------------------------
 
 void ofApp::tidalOSCincoming(ofxOscMessage tidal) {
 	int numArgs = tidal.getNumArgs();
@@ -1737,9 +2044,48 @@ void ofApp::tidalOSCincoming(ofxOscMessage tidal) {
                  else if (tidal.getArgAsString(i) == "speed") {
                      temp += ofToString(orbit) + " speed " + ofToString(tidal.getArgAsFloat(i + 1)) + "\n";
                  }
+                 else if (tidal.getArgAsString(i) == "resonance") {
+                     temp += ofToString(orbit) + " rotateY " + ofToString(tidal.getArgAsFloat(i + 1)*360.0f) + "\n";
+                 }
             }
 		}
         //ofLog() << temp;
 	}
-    executeScriptEvent(temp);
+    executeScriptEvent(temp,verboseOSC);
+}
+
+void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler internally 
+    int numArgs = tidal.getNumArgs();
+    string temp;
+    int orbit;
+    string axis;
+    
+    //if(_tCycle != _tPreviousCycle){
+        _tDelta = tidal.getArgAsFloat(17);
+        _tCycle = tidal.getArgAsFloat(18);
+        _tCps = tidal.getArgAsFloat(19);
+        _tCpsToCV = (int)(_tCps*1000);
+        _tPreviousCycle = _tCycle;
+    //} else {
+    
+        orbit = tidal.getArgAsInt(6);
+        temp += ofToString(orbit) +" load "+ ofToString(tidal.getArgAsString(0))  + "\n";
+        temp += ofToString(orbit) + " setPos " + ofToString(tidal.getArgAsFloat(1)) + "\n";
+        temp += ofToString(orbit) + " setEnd " + ofToString(tidal.getArgAsFloat(2)) + "\n";
+        temp += ofToString(orbit) + " speed " + ofToString(tidal.getArgAsFloat(3)) + "\n";
+        temp += ofToString(orbit) + " vVolume " + ofToString(tidal.getArgAsFloat(4)) + "\n";
+        temp += ofToString(orbit) + " opacity " + ofToString(tidal.getArgAsFloat(5)*255.0f) + "\n";
+        temp += ofToString(orbit) + " width " + ofToString(tidal.getArgAsFloat(7)*ofGetWidth()) + "\n";
+        temp += ofToString(orbit) + " height " + ofToString(tidal.getArgAsFloat(8)*ofGetHeight()) + "\n";
+        temp += ofToString(orbit) + " posX " + ofToString(tidal.getArgAsFloat(9)*ofGetWidth()) + "\n";
+        temp += ofToString(orbit) + " posY " + ofToString(tidal.getArgAsFloat(10)*ofGetHeight()) + "\n";
+        temp += ofToString(orbit) + " r " + ofToString(tidal.getArgAsFloat(11)*255.0f) + "\n";
+        temp += ofToString(orbit) + " g " + ofToString(tidal.getArgAsFloat(12)*255.0f) + "\n";
+        temp += ofToString(orbit) + " b " + ofToString(tidal.getArgAsFloat(13)*255.0f) + "\n";
+        axis +=  ofToUpper(tidal.getArgAsString(16));
+        temp += ofToString(orbit) + " rotSpeed" + axis + " " + ofToString(tidal.getArgAsFloat(14)*255.0f) + "\n";
+        temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(15)) + "\n";
+    //}
+    _tTemp = temp;
+
 }
