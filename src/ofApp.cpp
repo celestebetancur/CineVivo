@@ -904,11 +904,11 @@ void ofApp::update(){
          }
     }
 //-----------UPDATE TSCHEDULER--------------------------------------
-    timmer(_tCpsToCV);
+    /*timmer(_tCpsToCV);
     
     if(_tScheduler){
         executeScriptEvent(_tTemp, verboseOSC);
-    }
+    }*/
 // Update Audio-----------------------------------------------------
 
     ofSoundUpdate();
@@ -2087,5 +2087,5 @@ void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler int
         temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(15)) + "\n";
     //}
     _tTemp = temp;
-
+    executeScriptEvent(_tTemp, verboseOSC);
 }
