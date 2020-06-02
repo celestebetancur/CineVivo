@@ -55,11 +55,12 @@ void ofApp::setup(){
 
     for(int i = 0; i < LIM; i++){
         prevVideo[i] = "";
-        worldCenterX[i] = ofGetWidth()/2;
-        worldCenterY[i] = ofGetHeight()/2;
-        rotationSpeedX[i] = 0;
-        rotationSpeedX[i] = 0;
-        rotationSpeedX[i] = 0;
+        worldCenterX[i] = 0;
+        worldCenterY[i] = 0;
+        rectMode[i] = 1;
+        rotationSpeedX[i] = 1.0f;
+        rotationSpeedY[i] = 1.0f;
+        rotationSpeedZ[i] = 1.0f;
         vX[i] = 0;
         vY[i] = 0;
         vIndex[i] = 0;
@@ -87,7 +88,6 @@ void ofApp::setup(){
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
         pictures[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR);
-        rectMode[i] = 1;
         maskedIndex[i] = 0;
         currentFilter[i] = 0;
         filterOn[i] = false;
@@ -97,7 +97,7 @@ void ofApp::setup(){
         vBlend[i] = false;
         vChroma[i] = false;
         vColorChroma[i] = ofColor(0);
-        vLoopState[i] = OF_LOOP_NORMAL;
+        vLoopState[i] = OF_LOOP_NORMAL; //NORMAL
         imageON[i]  = false;
 
         fbo[i].allocate(WIDTH, HEIGHT, GL_RGBA);
@@ -139,7 +139,10 @@ void ofApp::update(){
         if (m.getAddress() == "/play2") {
             tidalOSCincoming(m);
         }
-        if (m.getAddress() == "/cinevivo") {
+        if (m.getAddress() == "/tidalVideo") {
+            for(int i = 0; i < LIM; i++){
+                vLoopState[i] = OF_LOOP_NONE;
+            }
             tidalOSCNewSpec(m);
         }
         else{
@@ -174,6 +177,8 @@ void ofApp::update(){
             if (m.getAddress() == "/clean"){
                 numVideosLoaded = 0;
                 for(int i = 0; i < LIM; i++){
+                    prevVideo[i] = "";
+                    prevShader[i] = "";
                     deviceID[i] = -1;
                     videoLC[i].stop();
                     videoLC[i].close();
@@ -241,28 +246,37 @@ void ofApp::update(){
             if(m.getArgAsInt(0) >= 0 &&  m.getArgAsInt(0) < LIM){
                 if (m.getAddress() == "/load"  &&  (m.getNumArgs() == 2 || m.getNumArgs() == 3)){
                    if (m.getArgAsString(1) == XML.getValue("WORDS:NAME:CAMERA","camera")){
-                        int n = m.getArgAsInt(0);
-                        int device = m.getArgAsInt(2);
-                        if(m.getNumArgs() == 3 && device < deviceNUM){
-                          camON[n] = true;
-                          deviceID[n] = device;
-                        } else{
-                          camON[n] = true;
-                          deviceID[n] = 0;
-                        }
-                        if(cam[deviceID[n]].isInitialized()){
-                            vIndex[n] = 0;
+                       int n = m.getArgAsInt(0);
+                       int device = 0;
+                       if(m.getNumArgs() == 3){
+                           device = m.getArgAsInt(2);
+                       }
+                       if(m.getNumArgs() == 3 && device < deviceNUM){
+                           camON[n] = true;
+                           deviceID[n] = device;
+                       } else{
+                           camON[n] = true;
+                           deviceID[n] = 0;
+                       }
+                       if(cam[deviceID[n]].isInitialized()){
+                           vIndex[n] = 0;
 #if (defined(__APPLE__) && defined(__MACH__))
-                            syphonON[n] = false;
+                           syphonON[n] = false;
 #endif
-                            vIndexPlaying[n] = false;
-                            model3DOn[n] = false;
-							shaderOn[n] = false;
-                            vW[n] = ofGetWidth();
-                            vH[n] = ofGetHeight();
-                            four[n].set(ofPoint(0,vH[n]));
-                            three[n].set(ofPoint( vW[n] ,vH[n]));
-                            two[n].set(ofPoint(vW[n],0));
+                           vIndexPlaying[n] = false;
+                           model3DOn[n] = false;
+                           shaderOn[n] = false;
+                           if(vW[n] == 0 && vH[n] == 0){
+                               vW[n] = windowWidth;
+                               vH[n] = windowHeight;
+                           }
+                           if(rectMode[1]){
+                               worldCenterX[n] = vW[n]/2;
+                               worldCenterY[n] = vH[n]/2;
+                           }
+                           four[n].set(ofPoint(0,vH[n]));
+                           three[n].set(ofPoint( vW[n] ,vH[n]));
+                           two[n].set(ofPoint(vW[n],0));
 
                             if(shaderLoaded[n] == false){
 
@@ -366,24 +380,29 @@ void ofApp::update(){
                         if(prevVideo[n] != temp){
                             prevVideo[n] = temp;
                             videoLC[n].load(temp);
-                            videoLC[n].play();
-                            if(videoLC[n].isLoaded()){
-                                vTotalFrames[n] = videoLC[n].getTotalNumFrames();
-                                vEndPoint[n] = vTotalFrames[n];
-                                camON[n] = false;
+                            videoLC[i].setLoopState(vLoopState[i]);
+                        }
+                        videoLC[n].play();
+                        if(videoLC[n].isLoaded()){
+                            vTotalFrames[n] = videoLC[n].getTotalNumFrames();
+                            vEndPoint[n] = vTotalFrames[n];
+                            camON[n] = false;
 #if (defined(__APPLE__) && defined(__MACH__))
-                                syphonON[n] = false;
+                            syphonON[n] = false;
 #endif
-                                model3DOn[n] = false;
-                                shaderOn[n] = false;
-                                vIndex[n] = 1;
-                                vIndexPlaying[n] = true;
-                                vW[n] = videoLC[n].getWidth();
-                                vH[n] = videoLC[n].getHeight();
-                                four[n].set(ofPoint(0,vH[n]));
-                                three[n].set(ofPoint( vW[n] ,vH[n]));
-                                two[n].set(ofPoint(vW[n],0));
+                            model3DOn[n] = false;
+                            shaderOn[n] = false;
+                            vIndex[n] = 1;
+                            vIndexPlaying[n] = true;
+                            vW[n] = videoLC[n].getWidth();
+                            vH[n] = videoLC[n].getHeight();
+                            if(rectMode[1]){
+                                worldCenterX[n] = vW[n]/2;
+                                worldCenterY[n] = vH[n]/2;
                             }
+                            four[n].set(ofPoint(0,vH[n]));
+                            three[n].set(ofPoint( vW[n] ,vH[n]));
+                            two[n].set(ofPoint(vW[n],0));
                         }
                     }
                 }
@@ -397,6 +416,7 @@ void ofApp::update(){
                     }
                     videoLC[n].load(temp);
                     if(videoLC[n].isLoaded()){
+                        videoLC[n].setFrame(vInitPoint[n]);
                         videoLC[n].play();
                         camON[n] = false;
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -533,14 +553,21 @@ void ofApp::update(){
                     rectMode[m.getArgAsInt(0)] = m.getArgAsInt(1);
                 }
                 if (m.getAddress() == "/pos" && m.getNumArgs() == 3){
-                    vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
-                    vY[m.getArgAsInt(0)] = m.getArgAsInt(2);
+                    int n = m.getArgAsInt(0);
+                    vX[n] = (int)m.getArgAsInt(1)/2.0;
+                    vY[n] = (int)m.getArgAsInt(2)/2.0;
+                    worldCenterX[n] = vX[n]+(vW[n]/2);
+                    worldCenterY[n] = vY[n]+(vH[n]/2);
                 }
                 if (m.getAddress() == "/posX" && m.getNumArgs() == 2){
-                    vX[m.getArgAsInt(0)] = m.getArgAsInt(1);
+                    int n = m.getArgAsInt(0);
+                    vX[n] = (int)m.getArgAsInt(1)/2.0;
+                    worldCenterX[n] = vX[n]+(vW[n]/2);
                 }
                 if (m.getAddress() == "/posY" && m.getNumArgs() == 2){
-                    vY[m.getArgAsInt(0)] = m.getArgAsInt(1);
+                    int n = m.getArgAsInt(0);
+                    vY[n] = (int)m.getArgAsInt(1)/2.0;
+                    worldCenterY[n] = vY[n]+(vH[n]/2);
                 }
                 if (m.getAddress() == "/rotate" && m.getNumArgs() == 4){
                     vRotX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
@@ -557,13 +584,13 @@ void ofApp::update(){
                     vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                 }
                 if (m.getAddress() == "/rotSpeedX" && m.getNumArgs() == 2){
-                    rotationSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                    rotationSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
                 }
                 if (m.getAddress() == "/rotSpeedY" && m.getNumArgs() == 2){
-                    rotationSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                    rotationSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
                 }
                 if (m.getAddress() == "/rotSpeedZ" && m.getNumArgs() == 2){
-                    rotationSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(1);
+                    rotationSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
                 }
                 if (m.getAddress() == "/size" && m.getNumArgs() == 3){
                     vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
@@ -641,8 +668,8 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/vVolume" && m.getNumArgs() == 2){
                     int n = m.getArgAsInt(0);
-                    vVolume[n] = m.getArgAsInt(1);
-                    videoLC[n].setVolume(n);
+                    vVolume[n] = m.getArgAsFloat(1);
+                    videoLC[n].setVolume(vVolume[n]);
                 }
                 if (m.getAddress() == "/filter"){
                     int n = m.getArgAsInt(0);
@@ -755,6 +782,12 @@ void ofApp::update(){
                     else{
 #endif
                         string name = m.getArgAsString(1);
+                        vW[n] = windowWidth;
+                        vH[n] = windowHeight;
+                        if(rectMode[1]){
+                            worldCenterX[n] = vW[n]/2;
+                            worldCenterY[n] = vH[n]/2;
+                        }
                         if(prevShader[n] != name){
                             prevShader[n] = name;
                             string shaderName = "shaders/" + name;
@@ -919,27 +952,26 @@ void ofApp::update(){
     for(int i = 0; i < LIM; i++){
         if(vIndexPlaying[i]){
             c++;
-            //videoLC[i].setLoopState(vLoopState[i]);
             videoLC[i].update();
             if(videoLC[i].isFrameNew() && !vChroma[i]){
                 pix[i] = videoLC[i].getPixels();
                 texVideo[i].loadData(pix[i]);
-                if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
-                    videoLC[i].setFrame(vInitPoint[i]);
+                if(videoLC[i].getCurrentFrame() == vEndPoint[i]){
+                    vIndexPlaying[i] = 0;
                 }
             }
             else if(videoLC[i].isFrameNew() && vChroma[i]){
                     pix[i] = videoLC[i].getPixels();
                     chroma(&pix[i],&texVideo[i],vColorChroma[i]);
                 if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
-                    videoLC[i].setPosition(vInitPoint[i]);
+                    vIndexPlaying[i] = 0;
                 }
             }
             else if(videoLC[i].isFrameNew() && vChroma[i] && maskedIndex[i] == 1){
                 pix[i] = videoLC[i].getPixels();
                 chromaMask(&pix[i], &mask[i].getPixels(), &texVideo[i],vColorChroma[i]);
                 if(videoLC[i].getCurrentFrame() >= vEndPoint[i]){
-                    videoLC[i].setPosition(vInitPoint[i]);
+                    vIndexPlaying[i] = 0;
                 }
             }
         }
@@ -999,7 +1031,7 @@ void ofApp::draw(){
     ofSetBackgroundColor(backgroundColor);
     ofSetBackgroundAuto(backgroundAuto);
     //ofSetRectMode(OF_RECTMODE_CENTER);
-
+    
     for(int i = 0; i < LIM; i++){
         if(vIndex[i] == 1 || camON[i] || imageON[i] ||
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -1009,11 +1041,12 @@ void ofApp::draw(){
             ofPushMatrix();
             ofTranslate(worldCenterX[i],worldCenterY[i]);
             ofPushMatrix();
-
+            
             float tempMillis = ofGetElapsedTimeMillis();
             ofRotateXDeg(vRotX[i] * (rotationSpeedX[i]*tempMillis));
             ofRotateYDeg(vRotY[i] * (rotationSpeedY[i]*tempMillis));
             ofRotateZDeg(vRotZ[i] * (rotationSpeedY[i]*tempMillis));
+            
             if(rectMode[i] == 0){
                 ofTranslate(0,0);
             }
@@ -1027,13 +1060,13 @@ void ofApp::draw(){
             if(blur[i] == true){
                 filtBlur[i][0]->begin();
             }
-            if(filterOn[i] == true && model3DOn[i] == false){
+            if(filterOn[i] == true && model3DOn[i] == false && !shaderOn[i]){
                 ofPushMatrix();
                 ofScale(-1, 1);
                 ofTranslate(-vW[i], 0);
                 filters[i][currentFilter[i]]->begin();
             }
-            if(vIndexPlaying[i] == true){
+            if(vIndexPlaying[i] == true && !shaderOn[i]){
                 if(vFeedback[i]){
                     ofPushMatrix();
                     ofSetRectMode(OF_RECTMODE_CENTER);
@@ -1045,11 +1078,12 @@ void ofApp::draw(){
                     }
                     ofSetRectMode(OF_RECTMODE_CORNER);
                     ofPopMatrix();
-                } else {
+                }
+                if(!videoLC[i].getIsMovieDone() || videoLC[i].isPlaying()){
                     texVideo[i].draw(one[i], two[i], three[i], four[i]);
                 }
             }
-            if(camON[i]){
+            if(camON[i] && !shaderOn[i]){
                 if(vFeedback[i]){
                     ofPushMatrix();
                     ofSetRectMode(OF_RECTMODE_CENTER);
@@ -1091,7 +1125,7 @@ void ofApp::draw(){
             if(imageON[i] == true && maskedIndex[i] == 0){
                 pictures[i].getTexture().draw(one[i], two[i], three[i], four[i]);
             }
-            if(filterOn[i] == true && model3DOn[i] == false){
+            if(filterOn[i] == true && model3DOn[i] == false && !shaderOn[i]){
                 filters[i][currentFilter[i]]->end();
                 ofPopMatrix();
             }
@@ -1107,7 +1141,7 @@ void ofApp::draw(){
                     shader[i].setUniform3f("iResolution",WIDTH,HEIGHT, 1);
                     shader[i].setUniformTexture("iChannel0", texVideo[i], 2);
                 }
-
+                
                 ofSetColor(255, 255, 255);
                 ofDrawRectangle(0, 0, WIDTH, HEIGHT);
                 if(shader[i].isLoaded()){
@@ -1126,9 +1160,9 @@ void ofApp::draw(){
             font.drawString(textToExe, fontSize , fontSize + 5);
         }
         /*if(cursor == true) {
-            ofSetLineWidth(4);
-            ofDrawLine((fontSize*0.777)*(textToExe.size())+16,(fontSize*numLines)+(fontSize/2.0),(fontSize*0.777)*(textToExe.size())+16,(numLines*fontSize)+(fontSize*2));
-        }*/
+         ofSetLineWidth(4);
+         ofDrawLine((fontSize*0.777)*(textToExe.size())+16,(fontSize*numLines)+(fontSize/2.0),(fontSize*0.777)*(textToExe.size())+16,(numLines*fontSize)+(fontSize*2));
+         }*/
         ofSetColor(255);
     }
 }
@@ -1215,7 +1249,8 @@ void ofApp::mouseExited(int x, int y){
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
-
+    windowWidth = w;
+    windowHeight = h;
 }
 
 //--------------------------------------------------------------
@@ -1932,7 +1967,7 @@ void ofApp::executeScriptEvent(string getText, bool verbose) {
                     }
                     s.setAddress("/vVolume");
                     s.addIntArg(numV);
-                    s.addIntArg(ofToInt(texto[2]));
+                    s.addFloatArg(ofToFloat(texto[2]));
                     osc.sendMessage(s);
                 }
                 if(texto[1] == XML.getValue("WORDS:NAME:FIT","fit") && texto.size() == 2){
@@ -2061,30 +2096,31 @@ void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler int
     string axis;
     
     //if(_tCycle != _tPreviousCycle){
-        _tDelta = tidal.getArgAsFloat(17);
-        _tCycle = tidal.getArgAsFloat(18);
-        _tCps = tidal.getArgAsFloat(19);
+        _tDelta = tidal.getArgAsFloat(18);
+        _tCycle = tidal.getArgAsFloat(19);
+        _tCps = tidal.getArgAsFloat(20);
         _tCpsToCV = (int)(_tCps*1000);
         _tPreviousCycle = _tCycle;
     //} else {
     
-        orbit = tidal.getArgAsInt(6);
+        orbit = tidal.getArgAsInt(7);
         temp += ofToString(orbit) +" load "+ ofToString(tidal.getArgAsString(0))  + "\n";
         temp += ofToString(orbit) + " setPos " + ofToString(tidal.getArgAsFloat(1)) + "\n";
         temp += ofToString(orbit) + " setEnd " + ofToString(tidal.getArgAsFloat(2)) + "\n";
-        temp += ofToString(orbit) + " speed " + ofToString(tidal.getArgAsFloat(3)) + "\n";
-        temp += ofToString(orbit) + " vVolume " + ofToString(tidal.getArgAsFloat(4)) + "\n";
-        temp += ofToString(orbit) + " opacity " + ofToString(tidal.getArgAsFloat(5)*255.0f) + "\n";
-        temp += ofToString(orbit) + " width " + ofToString(tidal.getArgAsFloat(7)*ofGetWidth()) + "\n";
-        temp += ofToString(orbit) + " height " + ofToString(tidal.getArgAsFloat(8)*ofGetHeight()) + "\n";
-        temp += ofToString(orbit) + " posX " + ofToString(tidal.getArgAsFloat(9)*ofGetWidth()) + "\n";
-        temp += ofToString(orbit) + " posY " + ofToString(tidal.getArgAsFloat(10)*ofGetHeight()) + "\n";
-        temp += ofToString(orbit) + " r " + ofToString(tidal.getArgAsFloat(11)*255.0f) + "\n";
-        temp += ofToString(orbit) + " g " + ofToString(tidal.getArgAsFloat(12)*255.0f) + "\n";
-        temp += ofToString(orbit) + " b " + ofToString(tidal.getArgAsFloat(13)*255.0f) + "\n";
-        axis +=  ofToUpper(tidal.getArgAsString(16));
-        temp += ofToString(orbit) + " rotSpeed" + axis + " " + ofToString(tidal.getArgAsFloat(14)*255.0f) + "\n";
-        temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(15)) + "\n";
+        temp += ofToString(orbit) + " loopState " + ofToString(tidal.getArgAsInt(3)) + "\n";
+        temp += ofToString(orbit) + " speed " + ofToString(tidal.getArgAsFloat(4)) + "\n";
+        temp += ofToString(orbit) + " vVolume " + ofToString(tidal.getArgAsFloat(5)) + "\n";
+        temp += ofToString(orbit) + " opacity " + ofToString(tidal.getArgAsFloat(6)*255.0f) + "\n";
+        temp += ofToString(orbit) + " width " + ofToString(tidal.getArgAsFloat(8) * windowWidth) + "\n";
+        temp += ofToString(orbit) + " height " + ofToString(tidal.getArgAsFloat(9) * windowHeight) + "\n";
+        temp += ofToString(orbit) + " posX " + ofToString(tidal.getArgAsFloat(10) * windowWidth) + "\n";
+        temp += ofToString(orbit) + " posY " + ofToString(tidal.getArgAsFloat(11) * windowHeight) + "\n";
+        temp += ofToString(orbit) + " r " + ofToString(tidal.getArgAsFloat(12)*255.0f) + "\n";
+        temp += ofToString(orbit) + " g " + ofToString(tidal.getArgAsFloat(13)*255.0f) + "\n";
+        temp += ofToString(orbit) + " b " + ofToString(tidal.getArgAsFloat(14)*255.0f) + "\n";
+        axis +=  ofToUpper(tidal.getArgAsString(17));
+        temp += ofToString(orbit) + " rotSpeed" + axis + " " + ofToString(tidal.getArgAsFloat(15)*255.0f) + "\n";
+        temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(16)) + "\n";
     //}
     _tTemp = temp;
     executeScriptEvent(_tTemp, verboseOSC);

@@ -51,7 +51,7 @@ public:
     ofxOscSender osc;
     int portIn;
     int portOut;
-    bool verboseOSC = true;
+    bool verboseOSC = false;
     
     // CineVivo LiveCoding
     ofPoint one[LIM],two[LIM],three[LIM],four[LIM];
@@ -103,8 +103,8 @@ public:
     int vTotalFrames [LIM];
     int vInitPoint [LIM];
     int vEndPoint [LIM];
-    int vW [LIM];
-    int vH [LIM];
+    float vW [LIM];
+    float vH [LIM];
     bool imageON[LIM];
     ofLoopType vLoopState[LIM];
 
