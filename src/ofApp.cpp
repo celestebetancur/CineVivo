@@ -53,7 +53,10 @@ void ofApp::setup(){
     numVideosLoaded = 0;
     backgroundColor = ofColor(0,0,0);
 
-    for(int i = 0; i < LIM; i++){
+    verboseOSC = false;
+    verbose = false;
+
+    for(size_t i = 0; i < LIM; i++){
         prevVideo[i] = "";
         worldCenterX[i] = 0;
         worldCenterY[i] = 0;
@@ -80,10 +83,12 @@ void ofApp::setup(){
         vInitPoint[i] = 0.0f;
         vEndPoint[i];
         camON[i] = false;
-        deviceID[i] = -1;
+        deviceID[i] = 0;
         one[i].set(0,0);
         videoLC[i].setPixelFormat(OF_PIXELS_RGBA);
-        videoLC[i].load("/videos/fluido.mov"); //init video layers for windows compatibility
+#ifdef __MINGW32__
+        videoLC[i].load("/videos/fluido.mov");
+#endif
         pix[i].allocate(WIDTH, HEIGHT, OF_PIXELS_RGBA);
         texVideo[i].allocate(pix[i]);
         mask[i].allocate(WIDTH, HEIGHT, OF_IMAGE_COLOR_ALPHA);
@@ -117,16 +122,36 @@ void ofApp::setup(){
         syphonON[i] = false;
 #endif
     }
+
+//----CAMERA INIT -------------------------------------------------
+
+#ifdef __linux__
     deviceNUM = cam[0].listDevices().size();
-    for(int i = 0; i < deviceNUM; i++){
-        cam[i].setDeviceID(i);
-        cam[i].initGrabber(windowWidth,windowHeight);
+    vector<ofVideoDevice> devices = cam[0].listDevices();
+    int c = 0;
+    for(size_t  i  = 0; i < deviceNUM; i++){
+        if(devices[i].bAvailable && i % 2 == 0){
+            if(verbose){
+                ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+            }
+            cam[c].setDeviceID(i);
+            cam[c].setup(windowWidth,windowHeight);
+            c++;
+        }
     }
+#endif
+#if (defined(__APPLE__) && defined(__MACH__) && defined(__MINGW32__))
+    deviceNUM = cam[0].listDevices().size();
+    for(size_t  i  = 0; i < deviceNUM; i++){
+        cam[i].setDeviceID(i);
+        cam[i].setup(windowWidth,windowHeight);
+    }
+#endif
 }
 
 //--------------------------------------------------------------
 void ofApp::update(){
-    
+
 //-----------OSC------------------------------------------------
     while (reciever.hasWaitingMessages()){
 
@@ -148,6 +173,17 @@ void ofApp::update(){
         else{
             //ofLog() << reciever.getNextMessage(m);
         for(int i  = 0; i < m.getNumArgs(); i++){
+            if (m.getAddress() == "/camList"  &&  m.getNumArgs() == 1){
+                deviceNUM = cam[0].listDevices().size();
+                vector<ofVideoDevice> devices = cam[0].listDevices();
+                for(size_t  i  = 0; i < deviceNUM; i++){
+                    if(devices[i].bAvailable){
+                    ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
+                    } else{
+                        ofLogNotice() << devices[i].id << ": " << devices[i].deviceName << " - unavailable ";
+                    }
+                }
+            }
             if (m.getAddress() == "/setVerbose"  &&  m.getNumArgs() == 1){
                 verboseOSC = m.getArgAsBool(0);
             }
@@ -251,14 +287,13 @@ void ofApp::update(){
                        if(m.getNumArgs() == 3){
                            device = m.getArgAsInt(2);
                        }
-                       if(m.getNumArgs() == 3 && device < deviceNUM){
-                           camON[n] = true;
+                       if(m.getNumArgs() == 3 && device < CAMERAS){
                            deviceID[n] = device;
                        } else{
-                           camON[n] = true;
                            deviceID[n] = 0;
                        }
                        if(cam[deviceID[n]].isInitialized()){
+                           camON[n] = true;
                            vIndex[n] = 0;
 #if (defined(__APPLE__) && defined(__MACH__))
                            syphonON[n] = false;
@@ -938,7 +973,7 @@ void ofApp::update(){
     }
 //-----------UPDATE TSCHEDULER--------------------------------------
     /*timmer(_tCpsToCV);
-    
+
     if(_tScheduler){
         executeScriptEvent(_tTemp, verboseOSC);
     }*/
@@ -975,8 +1010,8 @@ void ofApp::update(){
                 }
             }
         }
-        if(i < deviceNUM){
-          cam[i].update();
+        if(i < CAMERAS){
+            cam[i].update();
         }
         if(camON[i]){
             c++;
@@ -1026,12 +1061,12 @@ void ofApp::update(){
 }
 //--------------------------------------------------------------
 void ofApp::draw(){
-    
+
     ofSetFullscreen(fullScreen);
     ofSetBackgroundColor(backgroundColor);
     ofSetBackgroundAuto(backgroundAuto);
     //ofSetRectMode(OF_RECTMODE_CENTER);
-    
+
     for(int i = 0; i < LIM; i++){
         if(vIndex[i] == 1 || camON[i] || imageON[i] ||
 #if (defined(__APPLE__) && defined(__MACH__))
@@ -1041,12 +1076,12 @@ void ofApp::draw(){
             ofPushMatrix();
             ofTranslate(worldCenterX[i],worldCenterY[i]);
             ofPushMatrix();
-            
+
             float tempMillis = ofGetElapsedTimeMillis();
             ofRotateXDeg(vRotX[i] * (rotationSpeedX[i]*tempMillis));
             ofRotateYDeg(vRotY[i] * (rotationSpeedY[i]*tempMillis));
             ofRotateZDeg(vRotZ[i] * (rotationSpeedY[i]*tempMillis));
-            
+
             if(rectMode[i] == 0){
                 ofTranslate(0,0);
             }
@@ -1101,7 +1136,6 @@ void ofApp::draw(){
             }
             if(vBlend[i]){
                 texVideo[i].draw(one[i], two[i], three[i], four[i]);
-                
             }
 #if (defined(__APPLE__) && defined(__MACH__))
             if(syphonON[i] && syphonDir.isValidIndex(syphonDirId[i])){
@@ -1141,7 +1175,7 @@ void ofApp::draw(){
                     shader[i].setUniform3f("iResolution",WIDTH,HEIGHT, 1);
                     shader[i].setUniformTexture("iChannel0", texVideo[i], 2);
                 }
-                
+
                 ofSetColor(255, 255, 255);
                 ofDrawRectangle(0, 0, WIDTH, HEIGHT);
                 if(shader[i].isLoaded()){
@@ -1339,6 +1373,15 @@ void ofApp::executeScriptEvent(string getText, bool verbose) {
                 if(textClean[i] != ""){
                     texto.push_back(textClean[i]);
                 }
+            }
+            if(texto[0] == XML.getValue("WORDS:NAME:CAMLIST","camList")){
+                if(verbose){
+                    ofLogNotice() << "CineVivo[editor]: Camera devices list - ";
+                }
+                s.setAddress("/camList");
+                s.addBoolArg(true);
+                osc.sendMessage(s);
+                ofLog() << "send";
             }
             if(texto[0] == XML.getValue("WORDS:NAME:SETVERBOSE","setVerbose") && texto.size() == 2){
                 if(verbose){
@@ -2089,12 +2132,12 @@ void ofApp::tidalOSCincoming(ofxOscMessage tidal) {
     executeScriptEvent(temp,verboseOSC);
 }
 
-void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler internally 
+void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler internally
     int numArgs = tidal.getNumArgs();
     string temp;
     int orbit;
     string axis;
-    
+
     //if(_tCycle != _tPreviousCycle){
         _tDelta = tidal.getArgAsFloat(18);
         _tCycle = tidal.getArgAsFloat(19);
@@ -2102,7 +2145,7 @@ void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler int
         _tCpsToCV = (int)(_tCps*1000);
         _tPreviousCycle = _tCycle;
     //} else {
-    
+
         orbit = tidal.getArgAsInt(7);
         temp += ofToString(orbit) +" load "+ ofToString(tidal.getArgAsString(0))  + "\n";
         temp += ofToString(orbit) + " setPos " + ofToString(tidal.getArgAsFloat(1)) + "\n";

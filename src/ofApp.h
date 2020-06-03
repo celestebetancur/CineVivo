@@ -13,17 +13,18 @@
 #define WIDTH 1280
 #define HEIGHT 800
 #define LIM 10
+#define CAMERAS 2
 
 class ofApp : public ofBaseApp{
-    
+
 public:
     void setup();
     void update();
     void draw();
     void exit();
-    
+
     void timmer(float time);
-    
+
     void keyPressed(int key);
     void keyReleased(int key);
     void mouseMoved(int x, int y );
@@ -35,15 +36,15 @@ public:
     void windowResized(int w, int h);
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
-    
+
     void chroma(ofPixels *src, ofTexture *texture, ofColor colorChroma);
     void chromaMask(ofPixels *src1, ofPixels *src2, ofTexture *texture, ofColor colorChroma);
     void blend(ofPixels *src1, ofPixels *src2, ofTexture *texture);
-    
+
     void executeScriptEvent(string getText, bool verbose);
-	void tidalOSCincoming(ofxOscMessage tidal);
+	  void tidalOSCincoming(ofxOscMessage tidal);
     void tidalOSCNewSpec(ofxOscMessage tidal);
-    
+
     //OSC
     ofxXmlSettings XML;
     ofxOscReceiver reciever;
@@ -51,21 +52,22 @@ public:
     ofxOscSender osc;
     int portIn;
     int portOut;
-    bool verboseOSC = false;
-    
+    bool verboseOSC;
+    bool verbose;
+
     // CineVivo LiveCoding
     ofPoint one[LIM],two[LIM],three[LIM],four[LIM];
     ofTexture texVideo[LIM];
     ofPixels pix[LIM];
-    
+
     bool fullScreen = false;
     bool vExt = false;
     ofColor backgroundColor;
     bool backgroundAuto;
     int windowWidth = 640;
     int windowHeight = 480;
-    
-    ofVideoGrabber cam[LIM];
+
+    ofVideoGrabber cam[CAMERAS];
     bool camON[LIM];
     int deviceNUM;
     int deviceID[LIM];
@@ -112,12 +114,12 @@ public:
     ofShader shader[LIM];
     bool shaderOn[LIM];
     ofFbo fbo[LIM];
-    
+
     int ambientLight;
-    
+
     // utilities
     int numVideosLoaded;
-    
+
     // filters
     int currentFilter[LIM];
     vector<AbstractFilter *> filters[LIM];
@@ -133,15 +135,15 @@ public:
     bool vBlend[LIM];
     int vToBlend[LIM][2];
     ofImage imageBlend;
-    
+
     //Draw effects
     bool vFeedback[LIM];
-    
+
     ofxAssimpModelLoader models3D[LIM];
     bool model3DOn[LIM];
     ofLight light;
     ofLight lightC;
-    
+
     //Simple Text Editor
     ofTrueTypeFont font;
     int fontSize;
@@ -154,9 +156,9 @@ public:
     ofColor fontColor;
     bool cursor;
     int numLines = 0;
-    
+
 //-----TIDAL----------------------------------------------------------
-    
+
     //Timer
     float time = 0;
     int referenceCycle = 0;
@@ -168,20 +170,19 @@ public:
     string _tTemp;
     int _tCpsToCV = 562;
     bool _tScheduler = false;
-    
+
 //--------------------------------------------------------------------
-    
+
 #if (defined(__APPLE__) && defined(__MACH__))
     // syphon
     ofxSyphonServerDirectory syphonDir;
     ofxSyphonClient syphonClient[LIM];
     bool syphonON[LIM];
     int syphonDirId[LIM];
-    
+
     bool s_superAsModifier = true;
-    
+
 #else
     bool s_superAsModifier = false;
 #endif
 };
-
