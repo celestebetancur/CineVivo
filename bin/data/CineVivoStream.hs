@@ -35,6 +35,7 @@ cvOSCSpecs = [(OSC "/tidalVideo" $ ArgList [("video",          Nothing),
                                           ("vrotationangle", Just $ VF 0),
                                           ("vrotationspeed", Just $ VF 0),
                                           ("vrotationaxis",  Just $ VS "x"),
+                                          ("vshader",        Just $ VS ""),
                                           ("delta",          Just $ VF 0),
                                           ("cycle",          Just $ VF 0),
                                           ("cps",            Just $ VF 0)])]
@@ -60,6 +61,7 @@ let video     = pS "video"          -- video                 pattern string 0
     vrotangle = pF "vrotationangle" -- video rotation angle  pattern float  15
     vrotspeed = pF "vrotationspeed" -- video rotation speed  pattern float  16
     vrotaxis  = pS "vrotationaxis"  -- video rotation axis   pattern string 17
+    vshader   = pS "vshader"        -- shader layer          pattern string 18
 :}
 
 -- CineVivo pattern parameter shorthands. Example:

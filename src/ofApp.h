@@ -10,10 +10,8 @@
     #include "ofxSyphon.h"
 #endif
 
-#define WIDTH 1280
-#define HEIGHT 800
 #define LIM 10
-#define CAMERAS 2
+#define CAMERAS 2 // Change this if you want to use more than 2 videocameras
 
 class ofApp : public ofBaseApp{
 
@@ -55,6 +53,11 @@ public:
     bool verboseOSC;
     bool verbose;
 
+    float wRate;
+    float hRate;
+    int WIDTH;
+    int HEIGHT;
+
     // CineVivo LiveCoding
     ofPoint one[LIM],two[LIM],three[LIM],four[LIM];
     ofTexture texVideo[LIM];
@@ -68,8 +71,8 @@ public:
     int windowHeight = 480;
 
     ofVideoGrabber cam[CAMERAS];
-    bool camON[LIM];
     int deviceNUM;
+    bool camON[LIM];
     int deviceID[LIM];
 
     ofVideoPlayer videoLC[LIM];
@@ -77,7 +80,6 @@ public:
     ofSoundPlayer audio[20];
 
     string prevVideo[LIM];
-    string prevShader[LIM];
     int worldCenterX[LIM];
     int worldCenterY[LIM];
     int rectMode[LIM];
@@ -113,6 +115,7 @@ public:
     //glsl shader
     ofShader shader[LIM];
     bool shaderOn[LIM];
+    string shaderName[LIM];
     ofFbo fbo[LIM];
 
     int ambientLight;
@@ -163,9 +166,9 @@ public:
     float time = 0;
     int referenceCycle = 0;
 
-	float _tCps = 0.562;
-	float _tCycle = 0;
-	float _tDelta = 0.889;
+	  float _tCps = 0.562;
+	  float _tCycle = 0;
+	  float _tDelta = 0.889;
     float _tPreviousCycle = -1.0f;
     string _tTemp;
     int _tCpsToCV = 562;

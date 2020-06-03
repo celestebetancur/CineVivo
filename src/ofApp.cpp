@@ -3,6 +3,12 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
 
+    WIDTH = 1280;
+    HEIGHT = 720;
+
+    wRate = WIDTH/1280.0;
+    hRate = HEIGHT/720.0;
+
     ofSetEscapeQuitsApp(false);
     ofSetWindowShape(windowWidth, windowHeight);
     ofSetWindowTitle("CineVivo");
@@ -102,7 +108,7 @@ void ofApp::setup(){
         vBlend[i] = false;
         vChroma[i] = false;
         vColorChroma[i] = ofColor(0);
-        vLoopState[i] = OF_LOOP_NORMAL; //NORMAL
+        vLoopState[i] = OF_LOOP_NORMAL; //NORMAL STATE BY DEFAULT
         imageON[i]  = false;
 
         fbo[i].allocate(WIDTH, HEIGHT, GL_RGBA);
@@ -135,7 +141,7 @@ void ofApp::setup(){
                 ofLogNotice() << devices[i].id << ": " << devices[i].deviceName;
             }
             cam[c].setDeviceID(i);
-            cam[c].setup(windowWidth,windowHeight);
+            cam[c].setup(1280,720); //640 480 - compatibility with oldest wbcams
             c++;
         }
     }
@@ -144,7 +150,7 @@ void ofApp::setup(){
     deviceNUM = cam[0].listDevices().size();
     for(size_t  i  = 0; i < deviceNUM; i++){
         cam[i].setDeviceID(i);
-        cam[i].setup(windowWidth,windowHeight);
+        cam[i].setup(1280,720); //640 480 - compatibility with oldest wbcams
     }
 #endif
 }
@@ -170,9 +176,12 @@ void ofApp::update(){
             }
             tidalOSCNewSpec(m);
         }
+        if (m.getAddress() == "/chuckVideo") {
+            tidalOSCNewSpec(m);
+        }
         else{
-            //ofLog() << reciever.getNextMessage(m);
-        for(int i  = 0; i < m.getNumArgs(); i++){
+        //ofLog() << reciever.getNextMessage(m);
+        for(size_t i  = 0; i < m.getNumArgs(); i++){
             if (m.getAddress() == "/camList"  &&  m.getNumArgs() == 1){
                 deviceNUM = cam[0].listDevices().size();
                 vector<ofVideoDevice> devices = cam[0].listDevices();
@@ -214,7 +223,6 @@ void ofApp::update(){
                 numVideosLoaded = 0;
                 for(int i = 0; i < LIM; i++){
                     prevVideo[i] = "";
-                    prevShader[i] = "";
                     deviceID[i] = -1;
                     videoLC[i].stop();
                     videoLC[i].close();
@@ -520,7 +528,7 @@ void ofApp::update(){
                 }
                 if (m.getAddress() == "/load3D"  &&  m.getNumArgs() == 2){
                     int n = m.getArgAsInt(0);
-					shaderOn[n] = true;
+					          shaderOn[n] = true;
                     camON[n] = false;
                     videoLC[n].stop();
                     vIndex[n] = 0;
@@ -619,13 +627,13 @@ void ofApp::update(){
                     vRotZ[m.getArgAsInt(0)] = m.getArgAsFloat(1);
                 }
                 if (m.getAddress() == "/rotSpeedX" && m.getNumArgs() == 2){
-                    rotationSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
+                    rotationSpeedX[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.05;
                 }
                 if (m.getAddress() == "/rotSpeedY" && m.getNumArgs() == 2){
-                    rotationSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
+                    rotationSpeedY[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.05;
                 }
                 if (m.getAddress() == "/rotSpeedZ" && m.getNumArgs() == 2){
-                    rotationSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.01;
+                    rotationSpeedZ[m.getArgAsInt(0)] = m.getArgAsFloat(1) * 0.05;
                 }
                 if (m.getAddress() == "/size" && m.getNumArgs() == 3){
                     vScaleX[m.getArgAsInt(0)] = m.getArgAsFloat(1)/vW[m.getArgAsInt(0)];
@@ -823,12 +831,9 @@ void ofApp::update(){
                             worldCenterX[n] = vW[n]/2;
                             worldCenterY[n] = vH[n]/2;
                         }
-                        if(prevShader[n] != name){
-                            prevShader[n] = name;
-                            string shaderName = "shaders/" + name;
-                            shaderOn[m.getArgAsInt(0)] = true;
-                            shader[n].load(shaderName);
-                        }
+                        shaderName[n] = name;
+                        shaderOn[m.getArgAsInt(0)] = true;
+                        shader[n].load("shaders/" + shaderName[n]);
 #if (defined(__APPLE__) && defined(__MACH__))
                     }
 #endif
@@ -984,7 +989,7 @@ void ofApp::update(){
 // Update Graphic Things --------------------------------------------
 
     int c = 0;
-    for(int i = 0; i < LIM; i++){
+    for(size_t i = 0; i < LIM; i++){
         if(vIndexPlaying[i]){
             c++;
             videoLC[i].update();
@@ -1067,7 +1072,7 @@ void ofApp::draw(){
     ofSetBackgroundAuto(backgroundAuto);
     //ofSetRectMode(OF_RECTMODE_CENTER);
 
-    for(int i = 0; i < LIM; i++){
+    for(size_t i = 0; i < LIM; i++){
         if(vIndex[i] == 1 || camON[i] || imageON[i] ||
 #if (defined(__APPLE__) && defined(__MACH__))
            syphonON[i] ||
@@ -1080,7 +1085,7 @@ void ofApp::draw(){
             float tempMillis = ofGetElapsedTimeMillis();
             ofRotateXDeg(vRotX[i] * (rotationSpeedX[i]*tempMillis));
             ofRotateYDeg(vRotY[i] * (rotationSpeedY[i]*tempMillis));
-            ofRotateZDeg(vRotZ[i] * (rotationSpeedY[i]*tempMillis));
+            ofRotateZDeg(vRotZ[i] * (rotationSpeedZ[i]*tempMillis));
 
             if(rectMode[i] == 0){
                 ofTranslate(0,0);
@@ -1172,7 +1177,7 @@ void ofApp::draw(){
                 if(shader[i].isLoaded()){
                     shader[i].begin();
                     shader[i].setUniform1f("iGlobalTime", ofGetElapsedTimef());
-                    shader[i].setUniform3f("iResolution",WIDTH,HEIGHT, 1);
+                    shader[i].setUniform3f("iResolution",WIDTH, HEIGHT, 1);
                     shader[i].setUniformTexture("iChannel0", texVideo[i], 2);
                 }
 
@@ -1182,7 +1187,16 @@ void ofApp::draw(){
                     shader[i].end();
                 }
                 fbo[i].end();
-                fbo[i].draw(0, 0, ofGetWidth(), ofGetHeight());
+                if(camON[i]){
+                    fbo[i].draw(0, 0,windowWidth*wRate, windowHeight*hRate);
+                }
+                else if(vIndexPlaying[i]){
+                    float tW = 1280/(1.0f*vW[i]);
+                    float tH = 720/(1.0f*vH[i]);
+                    fbo[i].draw(0, 0,vW[i]*tW,vH[i]*tH);
+                } else {
+                    fbo[i].draw(0, 0,windowWidth, windowHeight);
+                }
             }
             ofPopMatrix();
             ofPopMatrix();
@@ -1256,9 +1270,7 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    /*int width = ofGetWidth();
-    float pct = (float)x / (float)width;
-    videoLC[1].setPosition(pct);*/
+
 }
 
 //--------------------------------------------------------------
@@ -1365,11 +1377,11 @@ void ofApp::executeScriptEvent(string getText, bool verbose) {
     string txt = getText;
     lineas = ofSplitString(txt, "\n");
 
-    for(int i = 0; i < lineas.size();i++){
+    for(size_t i = 0; i < lineas.size();i++){
         ofxOscMessage s;
         if(lineas[i].size() != 0){
             textClean = ofSplitString(lineas[i], " ");
-            for(int i = 0; i < textClean.size();i++){
+            for(size_t i = 0; i < textClean.size();i++){
                 if(textClean[i] != ""){
                     texto.push_back(textClean[i]);
                 }
@@ -2133,21 +2145,25 @@ void ofApp::tidalOSCincoming(ofxOscMessage tidal) {
 }
 
 void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler internally
-    int numArgs = tidal.getNumArgs();
     string temp;
     int orbit;
     string axis;
 
     //if(_tCycle != _tPreviousCycle){
-        _tDelta = tidal.getArgAsFloat(18);
-        _tCycle = tidal.getArgAsFloat(19);
-        _tCps = tidal.getArgAsFloat(20);
+        _tDelta = tidal.getArgAsFloat(19);
+        _tCycle = tidal.getArgAsFloat(20);
+        _tCps = tidal.getArgAsFloat(21);
         _tCpsToCV = (int)(_tCps*1000);
         _tPreviousCycle = _tCycle;
     //} else {
 
         orbit = tidal.getArgAsInt(7);
-        temp += ofToString(orbit) +" load "+ ofToString(tidal.getArgAsString(0))  + "\n";
+        string tempString = tidal.getArgAsString(0);
+        if(tempString == "shader"){
+            temp += ofToString(orbit) +" shader "+ ofToString(tidal.getArgAsString(18))  + "\n";
+        } else {
+            temp += ofToString(orbit) +" load "+ ofToString(tidal.getArgAsString(0))  + "\n";
+        }
         temp += ofToString(orbit) + " setPos " + ofToString(tidal.getArgAsFloat(1)) + "\n";
         temp += ofToString(orbit) + " setEnd " + ofToString(tidal.getArgAsFloat(2)) + "\n";
         temp += ofToString(orbit) + " loopState " + ofToString(tidal.getArgAsInt(3)) + "\n";
