@@ -2178,8 +2178,9 @@ void ofApp::tidalOSCNewSpec(ofxOscMessage tidal) {  //TODO: Handle scheduler int
         temp += ofToString(orbit) + " g " + ofToString(tidal.getArgAsFloat(13)*255.0f) + "\n";
         temp += ofToString(orbit) + " b " + ofToString(tidal.getArgAsFloat(14)*255.0f) + "\n";
         axis +=  ofToUpper(tidal.getArgAsString(17));
-        temp += ofToString(orbit) + " rotSpeed" + axis + " " + ofToString(tidal.getArgAsFloat(15)*255.0f) + "\n";
-        temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(16)) + "\n";
+        temp += ofToString(orbit) + " rotate" + axis + " " + ofToString(tidal.getArgAsFloat(15)) + "\n"; 
+        temp += ofToString(orbit) + " rotSpeed" + axis + " " + ofToString(tidal.getArgAsFloat(16)*255.0f) + "\n";
+
     //}
     _tTemp = temp;
     executeScriptEvent(_tTemp, verboseOSC);
