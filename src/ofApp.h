@@ -75,6 +75,8 @@ public:
     bool camON[LIM];
     int deviceID[LIM];
 
+    //ofxHapPlayer videoLC[LIM]; //testing
+    const string videoFormats[3] = {".mp4",".mov",".mkv"};
     ofVideoPlayer videoLC[LIM];
     ofImage pictures[LIM];
     ofSoundPlayer audio[20];

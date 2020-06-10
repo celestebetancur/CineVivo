@@ -93,7 +93,7 @@ void ofApp::setup(){
         one[i].set(0,0);
         videoLC[i].setPixelFormat(OF_PIXELS_RGBA);
 #ifdef __MINGW32__
-        videoLC[i].load("/videos/fluido.mov");
+        videoLC[i].load("/videos/test.mov");
 #endif
         pix[i].allocate(WIDTH, HEIGHT, OF_PIXELS_RGBA);
         texVideo[i].allocate(pix[i]);
@@ -146,7 +146,7 @@ void ofApp::setup(){
         }
     }
 #endif
-#if (defined(__APPLE__) && defined(__MACH__) && defined(__MINGW32__))
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__MINGW32__)
     deviceNUM = cam[0].listDevices().size();
     for(size_t  i  = 0; i < deviceNUM; i++){
         cam[i].setDeviceID(i);
@@ -413,20 +413,26 @@ void ofApp::update(){
                         }
                     } else {
                         string temp;
+                        int n = m.getArgAsInt(0);
+                        bool loaded = false;
+                        string videoName = m.getArgAsString(1);
                         if(vExt == 1){
-                            temp = "videos/" + m.getArgAsString(1);
+                            temp = "videos/" + videoName;
                         }
                         if(vExt == 0) {
-                            temp = "videos/" + m.getArgAsString(1) + ".mov";
+                            for(size_t i = 0; i < 3; i++){
+                                temp = "videos/" + videoName + videoFormats[i];
+                                if(prevVideo[n] != temp && !loaded){
+                                    prevVideo[n] = temp;
+                                    if(videoLC[n].load(temp)){
+                                        videoLC[i].setLoopState(vLoopState[i]);
+                                        videoLC[n].play();
+                                        loaded = true;
+                                    }
+                                }
+                            }
                         }
-                        int n = m.getArgAsInt(0);
-                        if(prevVideo[n] != temp){
-                            prevVideo[n] = temp;
-                            videoLC[n].load(temp);
-                            videoLC[i].setLoopState(vLoopState[i]);
-                        }
-                        videoLC[n].play();
-                        if(videoLC[n].isLoaded()){
+                        if(videoLC[n].isLoaded() && loaded){
                             vTotalFrames[n] = videoLC[n].getTotalNumFrames();
                             vEndPoint[n] = vTotalFrames[n];
                             camON[n] = false;
@@ -748,8 +754,8 @@ void ofApp::update(){
                         filters[n].push_back(new ZoomBlurFilter());
                         filters[n].push_back(new EmbossFilter(vW[n], vH[n], 2.f));
                         filters[n].push_back(new SmoothToonFilter(vW[n], vH[n]));
-                        filters[n].push_back(new TiltShiftFilter(videoLC[n].getTexture()));
-                        filters[n].push_back(new VoronoiFilter(videoLC[n].getTexture()));
+                        //[n].push_back(new TiltShiftFilter(videoLC[n].getTexture()));
+                        //filters[n].push_back(new VoronoiFilter(videoLC[n].getTexture()));
                         filters[n].push_back(new CGAColorspaceFilter());
                         filters[n].push_back(new ErosionFilter(vW[n], vH[n]));
                         filters[n].push_back(new LookupFilter(vW[n], vH[n], "img/lookup_amatorka.png"));
@@ -759,8 +765,8 @@ void ofApp::update(){
                         filters[n].push_back(new PosterizeFilter(8));
                         filters[n].push_back(new LaplacianFilter(vW[n], vH[n], ofVec2f(1, 1)));
                         filters[n].push_back(new PixelateFilter(vW[n], vH[n]));
-                        filters[n].push_back(new HarrisCornerDetectionFilter(videoLC[n].getTexture()));
-                        filters[n].push_back(new MotionDetectionFilter(videoLC[n].getTexture()));
+                        //filters[n].push_back(new HarrisCornerDetectionFilter(videoLC[n].getTexture()));
+                        //filters[n].push_back(new MotionDetectionFilter(videoLC[n].getTexture()));
                         filters[n].push_back(new LowPassFilter(vW[n], vH[n], 0.9));
 
                         // blending examples
@@ -1106,7 +1112,7 @@ void ofApp::draw(){
                 ofTranslate(-vW[i], 0);
                 filters[i][currentFilter[i]]->begin();
             }
-            if(vIndexPlaying[i] == true && !shaderOn[i]){
+            if(vIndexPlaying[i] == true && !shaderOn[i] && videoLC[i].isLoaded()){
                 if(vFeedback[i]){
                     ofPushMatrix();
                     ofSetRectMode(OF_RECTMODE_CENTER);
@@ -1198,6 +1204,7 @@ void ofApp::draw(){
                     fbo[i].draw(0, 0,windowWidth, windowHeight);
                 }
             }
+
             ofPopMatrix();
             ofPopMatrix();
         }
@@ -1207,10 +1214,6 @@ void ofApp::draw(){
         if(textToExe.size() > 0){
             font.drawString(textToExe, fontSize , fontSize + 5);
         }
-        /*if(cursor == true) {
-         ofSetLineWidth(4);
-         ofDrawLine((fontSize*0.777)*(textToExe.size())+16,(fontSize*numLines)+(fontSize/2.0),(fontSize*0.777)*(textToExe.size())+16,(numLines*fontSize)+(fontSize*2));
-         }*/
         ofSetColor(255);
     }
 }
